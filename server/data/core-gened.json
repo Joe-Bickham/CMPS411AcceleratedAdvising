@@ -1,0 +1,20 @@
+{
+  "courses": [
+    {"code":"ENGL 101","title":"English Composition I","credits":3,"prereqs":[]},
+    {"code":"ENGL 102","title":"English Composition II","credits":3,"prereqs":["ENGL 101"]},
+    {"code":"SE 101","title":"Southeastern 101","credits":1,"prereqs":[]},
+
+    {"code":"MATH 1630","title":"Applied Calculus","credits":3,"prereqs":[]},
+    {"code":"MATH 2410","title":"Elementary Statistics","credits":3,"prereqs":["MATH 1630"]},
+
+    {"code":"HIST 201","title":"History I (Core)","credits":3,"prereqs":[]},
+    {"code":"HIST 202","title":"History II (Core)","credits":3,"prereqs":[]},
+    {"code":"ECON 202","title":"Economics (Core)","credits":3,"prereqs":[]},
+    {"code":"PSYC 101","title":"Intro to Psychology (Core)","credits":3,"prereqs":[]},
+
+    {"code":"BIOL 151","title":"Biology I + Lab (Core)","credits":4,"prereqs":[]},
+    {"code":"BIOL 152","title":"Biology II + Lab (Core)","credits":4,"prereqs":["BIOL 151"]},
+
+    {"code":"COMM 2110","title":"Public Speaking (Core)","credits":3,"prereqs":[]}
+  ]
+}

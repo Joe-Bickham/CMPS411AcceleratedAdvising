@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Select Degree – Accelerated Advising</title>
+  <link rel="stylesheet" href="ui-shared.css"/>
+  <style>
+    :root { --green:#006747; --emerald:#0c8a63; --gold:#fdb913;
+      --ink:#eaf8f5; --muted:rgba(255,255,255,.85);
+      --panel:rgba(255,255,255,.06); --panel-b:rgba(255,255,255,.12); }
+    body { margin:0; color:var(--ink); font:16px/1.5 system-ui, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(1200px 800px at 20% -10%, #0e7a62 0%, transparent 60%),
+        radial-gradient(1200px 800px at 80% 10%, #0b493b 0%, transparent 60%),
+        linear-gradient(180deg, #0e3a32 0%, #0b2a34 55%, #0a1f2d 100%);
+      min-height:100dvh; display:flex; flex-direction:column; }
+    .top-bar { display:flex; justify-content:space-between; align-items:center;
+      max-width:1100px; width:100%; margin:20px auto; padding:0 20px; }
+    .brand {display:flex; align-items:center; gap:10px; font-weight:800;}
+    .mark {width:38px; height:38px; border-radius:10px;
+      background:linear-gradient(160deg,var(--gold),#ffd56b); box-shadow:0 6px 18px rgba(0,0,0,.25);}
+    .user-controls {display:flex; align-items:center; gap:12px;}
+    .user-meta {opacity:.9; font-size:14px;}
+    .signout {background:#d94b4b; color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:700; cursor:pointer;}
+    .signout:hover {filter:brightness(1.05);}
+    .wrap {flex:1; display:flex; justify-content:center; align-items:flex-start; padding:20px;}
+    .card { background:var(--panel); border:1px solid var(--panel-b); border-radius:16px;
+      box-shadow:0 18px 48px rgba(0,0,0,.35); padding:24px; backdrop-filter: blur(4px); width:100%; max-width:800px; }
+    h1 {margin:0 0 6px; font-size:28px; text-align:center;}
+    .sub {margin:0 0 20px; color:var(--muted); font-size:14px; text-align:center;}
+    .button-list {display:flex; flex-direction:column; gap:16px; width:100%;}
+    .degree-btn { display:block; width:100%; text-align:center; font-size:20px; font-weight:800; letter-spacing:.3px;
+      color:#072b22; text-decoration:none; background:var(--green);
+      border:1px solid rgba(255,255,255,.18); border-radius:10px; padding:18px 20px;
+      box-shadow:0 6px 16px rgba(0,0,0,.25), inset 0 -2px 0 rgba(0,0,0,.15);
+      transition:transform .08s ease, background .15s ease, border-color .15s ease; }
+    .degree-btn:hover{ background:var(--emerald); transform:translateY(-2px); border-color:var(--gold); }
+    .degree-btn:active{ transform:translateY(0); }
+    .pill{ display:inline-block; margin-left:10px; font-size:13px; font-weight:700; color:var(--ink);
+      background:#145647; padding:4px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.18);}
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="brand">
+      <div class="mark" aria-hidden="true"></div>
+      Accelerated Advising
+    </div>
+    <div class="user-controls">
+      <div class="user-meta" id="user-info">Not signed in</div>
+      <button class="signout" id="signout">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <h1>Choose Your Program</h1>
+      <p class="sub">Pick a program to continue.</p>
+
+      <div class="button-list">
+        <!-- hrefs will be set by JS so it works from any folder -->
+        <a href="#" id="it-btn" class="degree-btn">
+          Information Technology, BS <span class="pill">2024–2025</span>
+        </a>
+        <a href="#" id="second-btn" class="degree-btn">
+          Second Placeholder Program <span class="pill">Prototype</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Display user status if present
+    try {
+      const rawUser = localStorage.getItem('aa_user');
+      if (rawUser) {
+        const u = JSON.parse(rawUser);
+        document.getElementById('user-info').textContent =
+          (u && u.name && u.email) ? `${u.name} (${u.email})` : 'Signed in';
+      }
+    } catch {}
+
+    // Are we already inside /google-signin-project/? If yes, don't repeat the folder.
+    const IN_SUBFOLDER = window.location.pathname.replace(/\\/g,'/').includes('/google-signin-project/');
+    const CHAT_PAGE = IN_SUBFOLDER ? 'it_bs_chat.html' : 'google-signin-project/it_bs_chat.html';
+
+    // Set actual hrefs so "open in new tab" works
+    document.getElementById('it-btn').setAttribute('href', CHAT_PAGE);
+    document.getElementById('second-btn').setAttribute('href', CHAT_PAGE);
+
+    function go(relPath){
+      const url = new URL(relPath, window.location.href).toString();
+      window.location.assign(url);
+    }
+
+    document.getElementById('it-btn').addEventListener('click', (e)=>{
+      e.preventDefault();
+      try{ localStorage.setItem('aa_program','it-bs-2024-25'); }catch{}
+      go(CHAT_PAGE);
+    });
+
+    document.getElementById('second-btn').addEventListener('click', (e)=>{
+      e.preventDefault();
+      try{ localStorage.setItem('aa_program','second-placeholder'); }catch{}
+      go(CHAT_PAGE); // point this to a second page if/when you create it
+    });
+
+    // Sign out and return to index
+    document.getElementById('signout').addEventListener('click', ()=>{
+      try{ localStorage.removeItem('aa_user'); localStorage.removeItem('aa_program'); }catch{}
+      window.location.assign('index.html');
+    });
+  </script>
+</body>
+</html>

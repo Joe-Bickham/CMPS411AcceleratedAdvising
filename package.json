@@ -1,0 +1,11 @@
+{
+  "name": "accelerated-advising",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Root package to start the server from project root",
+  "scripts": {
+    "start": "node server/server.js",
+    "server:start": "npm --prefix server start",
+    "server:scrape": "npm --prefix server run scrape:it"
+  }
+}

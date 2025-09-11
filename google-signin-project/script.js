@@ -20,7 +20,7 @@ function handleCredentialResponse(response) {
     }));
     
     // Redirect to placeholder page
-    window.location.href = 'placeholder.html';
+    window.location.href = 'degrees.html';
 }
 
 // Decode JWT token
@@ -53,7 +53,7 @@ function signInManually() {
     
     // Redirect after a short delay
     setTimeout(() => {
-        window.location.href = 'placeholder.html';
+        window.location.href = 'degrees.html';
     }, 1000);
 }
 
@@ -63,6 +63,6 @@ window.onload = function() {
     const userInfo = sessionStorage.getItem('userInfo');
     if (userInfo) {
         // User is already signed in, redirect to placeholder
-        window.location.href = 'placeholder.html';
+        window.location.href = 'degrees.html';
     }
 };
