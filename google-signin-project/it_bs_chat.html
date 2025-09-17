@@ -348,7 +348,11 @@
         }
       }catch{}
       document.getElementById('signout').addEventListener('click', ()=>{
-        try{ localStorage.removeItem('aa_user'); localStorage.removeItem('aa_program'); }catch{}
+        try{
+          localStorage.removeItem('aa_user');
+          localStorage.removeItem('aa_program');
+          localStorage.removeItem('aa_department');
+        }catch{}
         window.location.assign('../index.html');
       });
       try{
@@ -358,12 +362,22 @@
         }
       }catch{}
 
+      // Check if user came from Computer Science department
+      const selectedDept = localStorage.getItem('aa_department');
+      if (selectedDept !== 'computer-science') {
+        // Redirect back to department selection if not from Computer Science
+        const IN_SUBFOLDER = window.location.pathname.replace(/\\/g,'/').includes('/google-signin-project/');
+        const DEPT_PAGE = IN_SUBFOLDER ? 'department-selection.html' : 'google-signin-project/department-selection.html';
+        window.location.assign(DEPT_PAGE);
+        return;
+      }
+
       // boot
       (async function init(){
         MODEL = await loadCatalog();
         COURSE_INDEX = byCode(MODEL.courses||[]);
         renderChips();
-        addMsg('Advisor view ready. Toggle completed courses (right), then ask about prerequisites, eligibility, or press “Suggest next courses”.');
+        addMsg('Advisor view ready. Toggle completed courses (right), then ask about prerequisites, eligibility, or press "Suggest next courses".');
         addMsg('Tip: set Year/Term first; suggestions will match that semester only.');
       })();
     })();

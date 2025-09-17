@@ -19,8 +19,8 @@ function handleCredentialResponse(response) {
         picture: responsePayload.picture
     }));
     
-    // Redirect to placeholder page
-    window.location.href = 'degrees.html';
+    // Redirect to department selection page
+    window.location.href = 'department-selection.html';
 }
 
 // Decode JWT token
@@ -53,7 +53,7 @@ function signInManually() {
     
     // Redirect after a short delay
     setTimeout(() => {
-        window.location.href = 'degrees.html';
+        window.location.href = 'department-selection.html';
     }, 1000);
 }
 
@@ -62,7 +62,7 @@ window.onload = function() {
     // Check if user is already signed in
     const userInfo = sessionStorage.getItem('userInfo');
     if (userInfo) {
-        // User is already signed in, redirect to placeholder
-        window.location.href = 'degrees.html';
+        // User is already signed in, redirect to department selection
+        window.location.href = 'department-selection.html';
     }
 };

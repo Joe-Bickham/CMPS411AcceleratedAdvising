@@ -55,17 +55,17 @@
 
   <div class="wrap">
     <div class="card">
-      <h1>Choose Your Program</h1>
-      <p class="sub">Pick a program to continue.</p>
+      <h1 id="dept-title">Choose Your Program</h1>
+      <p class="sub" id="dept-subtitle">Pick a program to continue.</p>
 
-      <div class="button-list">
-        <!-- hrefs will be set by JS so it works from any folder -->
-        <a href="#" id="it-btn" class="degree-btn">
-          Information Technology, BS <span class="pill">2024–2025</span>
-        </a>
-        <a href="#" id="second-btn" class="degree-btn">
-          Second Placeholder Program <span class="pill">Prototype</span>
-        </a>
+      <div class="button-list" id="program-list">
+        <!-- Programs will be populated by JavaScript based on selected department -->
+      </div>
+      
+      <div class="button-list" style="margin-top: 20px;">
+        <button class="degree-btn" id="back-btn" style="background: #6c757d; font-size: 16px; padding: 12px 20px;">
+          ← Back to Department Selection
+        </button>
       </div>
     </div>
   </div>
@@ -84,31 +84,116 @@
     // Are we already inside /google-signin-project/? If yes, don't repeat the folder.
     const IN_SUBFOLDER = window.location.pathname.replace(/\\/g,'/').includes('/google-signin-project/');
     const CHAT_PAGE = IN_SUBFOLDER ? 'it_bs_chat.html' : 'google-signin-project/it_bs_chat.html';
-
-    // Set actual hrefs so "open in new tab" works
-    document.getElementById('it-btn').setAttribute('href', CHAT_PAGE);
-    document.getElementById('second-btn').setAttribute('href', CHAT_PAGE);
+    const DEPT_PAGE = IN_SUBFOLDER ? 'department-selection.html' : 'google-signin-project/department-selection.html';
 
     function go(relPath){
       const url = new URL(relPath, window.location.href).toString();
       window.location.assign(url);
     }
 
-    document.getElementById('it-btn').addEventListener('click', (e)=>{
-      e.preventDefault();
-      try{ localStorage.setItem('aa_program','it-bs-2024-25'); }catch{}
-      go(CHAT_PAGE);
-    });
+    // Department program mappings
+    const DEPARTMENT_PROGRAMS = {
+      'computer-science': [
+        {
+          id: 'it-bs',
+          title: 'Information Technology, BS',
+          pill: '2024–2025',
+          page: CHAT_PAGE,
+          storage: 'it-bs-2024-25'
+        }
+      ],
+      'communication-media': [
+        {
+          id: 'comm-placeholder',
+          title: 'Communication Studies, BA',
+          pill: 'Coming Soon',
+          page: null,
+          storage: 'comm-placeholder'
+        },
+        {
+          id: 'media-placeholder',
+          title: 'Media Studies, BA',
+          pill: 'Coming Soon',
+          page: null,
+          storage: 'media-placeholder'
+        }
+      ],
+      'sociology-criminal-justice': [
+        {
+          id: 'soc-placeholder',
+          title: 'Sociology, BA',
+          pill: 'Coming Soon',
+          page: null,
+          storage: 'soc-placeholder'
+        },
+        {
+          id: 'cj-placeholder',
+          title: 'Criminal Justice, BS',
+          pill: 'Coming Soon',
+          page: null,
+          storage: 'cj-placeholder'
+        }
+      ]
+    };
 
-    document.getElementById('second-btn').addEventListener('click', (e)=>{
-      e.preventDefault();
-      try{ localStorage.setItem('aa_program','second-placeholder'); }catch{}
-      go(CHAT_PAGE); // point this to a second page if/when you create it
+    // Get selected department and populate programs
+    const selectedDept = localStorage.getItem('aa_department');
+    if (!selectedDept) {
+      // No department selected, redirect back
+      window.location.assign(DEPT_PAGE);
+    } else {
+      const programs = DEPARTMENT_PROGRAMS[selectedDept] || [];
+      const deptNames = {
+        'computer-science': 'Department of Computer Science',
+        'communication-media': 'Department of Communication & Media Studies',
+        'sociology-criminal-justice': 'Department of Sociology & Criminal Justice'
+      };
+      
+      // Update page title and subtitle
+      document.getElementById('dept-title').textContent = deptNames[selectedDept] || 'Choose Your Program';
+      document.getElementById('dept-subtitle').textContent = 'Select a program from this department.';
+      
+      // Populate programs
+      const programList = document.getElementById('program-list');
+      programs.forEach(program => {
+        const btn = document.createElement('a');
+        btn.href = '#';
+        btn.className = 'degree-btn';
+        btn.id = program.id + '-btn';
+        btn.innerHTML = `${program.title} <span class="pill">${program.pill}</span>`;
+        
+        if (program.page) {
+          btn.setAttribute('href', program.page);
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            try { localStorage.setItem('aa_program', program.storage); } catch {}
+            go(program.page);
+          });
+        } else {
+          btn.style.opacity = '0.6';
+          btn.style.cursor = 'not-allowed';
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('This program is not yet available. Please check back later.');
+          });
+        }
+        
+        programList.appendChild(btn);
+      });
+    }
+
+    // Back button functionality
+    document.getElementById('back-btn').addEventListener('click', () => {
+      go(DEPT_PAGE);
     });
 
     // Sign out and return to index
     document.getElementById('signout').addEventListener('click', ()=>{
-      try{ localStorage.removeItem('aa_user'); localStorage.removeItem('aa_program'); }catch{}
+      try{
+        localStorage.removeItem('aa_user');
+        localStorage.removeItem('aa_program');
+        localStorage.removeItem('aa_department');
+      }catch{}
       window.location.assign('index.html');
     });
   </script>
