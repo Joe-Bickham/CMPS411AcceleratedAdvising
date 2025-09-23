@@ -13,3 +13,12 @@ C:\repos\gregs-college-selection\PdfScraper\obj\Debug\net9.0\refint\PdfScraper.d
 C:\repos\gregs-college-selection\PdfScraper\obj\Debug\net9.0\PdfScraper.pdb
 C:\repos\gregs-college-selection\PdfScraper\obj\Debug\net9.0\PdfScraper.genruntimeconfig.cache
 C:\repos\gregs-college-selection\PdfScraper\obj\Debug\net9.0\ref\PdfScraper.dll
+C:\repos\gregs-college-selection\PdfScraper\bin\Debug\net9.0\UglyToad.PdfPig.Core.dll
+C:\repos\gregs-college-selection\PdfScraper\bin\Debug\net9.0\UglyToad.PdfPig.DocumentLayoutAnalysis.dll
+C:\repos\gregs-college-selection\PdfScraper\bin\Debug\net9.0\UglyToad.PdfPig.Fonts.dll
+C:\repos\gregs-college-selection\PdfScraper\bin\Debug\net9.0\UglyToad.PdfPig.Package.dll
+C:\repos\gregs-college-selection\PdfScraper\bin\Debug\net9.0\UglyToad.PdfPig.Tokenization.dll
+C:\repos\gregs-college-selection\PdfScraper\bin\Debug\net9.0\UglyToad.PdfPig.Tokens.dll
+C:\repos\gregs-college-selection\PdfScraper\bin\Debug\net9.0\UglyToad.PdfPig.dll
+C:\repos\gregs-college-selection\PdfScraper\obj\Debug\net9.0\PdfScraper.csproj.AssemblyReference.cache
+C:\repos\gregs-college-selection\PdfScraper\obj\Debug\net9.0\PdfScraper.csproj.Up2Date
