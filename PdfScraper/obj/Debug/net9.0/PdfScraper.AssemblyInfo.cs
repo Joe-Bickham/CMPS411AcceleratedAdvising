@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PdfScraper")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+11d2f4d065d6f8dfb939f42907f44f93a25c617a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8751e726d6963698966c5ae1bf8a6943bc51eaad")]
 [assembly: System.Reflection.AssemblyProductAttribute("PdfScraper")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PdfScraper")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
