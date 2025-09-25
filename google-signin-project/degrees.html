@@ -85,6 +85,7 @@
     const IN_SUBFOLDER = window.location.pathname.replace(/\\/g,'/').includes('/google-signin-project/');
     const CHAT_PAGE = IN_SUBFOLDER ? 'it_bs_chat.html' : 'google-signin-project/it_bs_chat.html';
     const DEPT_PAGE = IN_SUBFOLDER ? 'department-selection.html' : 'google-signin-project/department-selection.html';
+    const COMM_PAGE = IN_SUBFOLDER ? 'it_bs_chat.html' : 'google-signin-project/comm_bs_chat.html';
 
     function go(relPath){
       const url = new URL(relPath, window.location.href).toString();
@@ -106,8 +107,8 @@
         {
           id: 'comm-placeholder',
           title: 'Communication, BA, Sports Communication',
-          pill: 'Coming Soon',
-          page: null,
+          pill: '2024-2025',
+          page: COMM_PAGE,
           storage: 'comm-placeholder'
         },
         {
