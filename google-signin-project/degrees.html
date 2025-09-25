@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -83,9 +83,10 @@
 
     // Are we already inside /google-signin-project/? If yes, don't repeat the folder.
     const IN_SUBFOLDER = window.location.pathname.replace(/\\/g,'/').includes('/google-signin-project/');
-    const CHAT_PAGE = IN_SUBFOLDER ? 'it_bs_chat.html' : 'google-signin-project/it_bs_chat.html';
+    const IT_CHAT_PAGE = IN_SUBFOLDER ? 'it_bs_chat.html' : 'google-signin-project/it_bs_chat.html';
+    const SOC_CHAT_PAGE = IN_SUBFOLDER ? 'sociology_ba_chat.html' : 'google-signin-project/sociology_ba_chat.html';
     const DEPT_PAGE = IN_SUBFOLDER ? 'department-selection.html' : 'google-signin-project/department-selection.html';
-
+    const CJ_CHAT_PaGE = IN_SUBFOLDER ? 'criminaljustice_ba_chat.html' : 'google-signin-project/criminaljustice_ba_chat.html';
     function go(relPath){
       const url = new URL(relPath, window.location.href).toString();
       window.location.assign(url);
@@ -98,7 +99,7 @@
           id: 'it-bs',
           title: 'Information Technology, BS',
           pill: '2024–2025',
-          page: CHAT_PAGE,
+          page: IT_CHAT_PAGE,
           storage: 'it-bs-2024-25'
         }
       ],
@@ -120,17 +121,17 @@
       ],
       'sociology-criminal-justice': [
         {
-          id: 'soc-placeholder',
+          id: 'soc-ba',
           title: 'Sociology, BA',
-          pill: 'Coming Soon',
-          page: null,
-          storage: 'soc-placeholder'
+          pill: '2024–2025',
+          page: SOC_CHAT_PAGE,
+          storage: 'soc-ba-2024-25'
         },
         {
           id: 'cj-placeholder',
           title: 'Criminal Justice, BS',
-          pill: 'Coming Soon',
-          page: null,
+          pill: '2024-25',
+          page: CJ_CHAT_PaGE,
           storage: 'cj-placeholder'
         }
       ]
