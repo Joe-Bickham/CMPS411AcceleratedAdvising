@@ -1,100 +1,208 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* === Global App Header (shared by header.js) === */
+.app-header{
+  max-width: 1200px;
+  width: 100%;
+  margin: 20px auto 10px;
+  padding: 0 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
+.brand{ display:flex; align-items:center; gap:18px; font-weight:800; }
+.brand-img{ height:40px; width:auto; user-select:none; }
+.brand-title{ color:#eaf8f5; font-weight:800; font-size:16px; }
+
+.header-right{ display:flex; align-items:center; gap:12px; }
+.user-pill{ color:#fff9; font-size:14px; white-space:nowrap; }
+.btn-signout{
+  padding:8px 12px; border-radius:10px; background:#d94b4b; color:#fff;
+  font-weight:700; font-size:13px; border:0; cursor:pointer;
+}
+.btn-signout:hover{ filter:brightness(1.05); }
+/* === Tweaks: header logo a bit bigger (logo only) === */
+.brand-img,
+.mark {          /* cover whichever class your header.js or page uses */
+  height: 56px;  /* was ~38–40px */
+  width: auto;
 }
 
-.container {
-    width: 100%;
-    max-width: 500px;
+/* === Tweaks: Department Selection button sizing/alignment === */
+/* Make dept buttons visually identical to degree buttons */
+.button-list .dept-btn {
+  min-height: 64px;           /* consistent height across pages */
+  padding: 18px 24px;         /* same internal spacing */
+  font-size: 20px;            /* same weight/size as degree buttons */
+  display: flex;              /* centers long titles + pill perfectly */
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
-.placeholder-card {
-    background: white;
-    border-radius: 12px;
-    padding: 40px 30px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    text-align: center;
+/* Pill alignment inside the buttons */
+.button-list .dept-btn .pill {
+  margin-left: 12px;
+  line-height: 1;             /* keeps the badge vertically centered */
+  vertical-align: middle;
 }
 
-.user-info {
-    margin-bottom: 30px;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    display: none; /* Hidden by default, shown when user info is loaded */
+/* Slightly stronger focus/hover for definition */
+.button-list .dept-btn:hover {
+  box-shadow: 0 10px 24px rgba(0,0,0,.45),
+              0 0 0 2px rgba(253,185,19,.18);
+  transform: translateY(-2px);
+}
+/* === Header: make ONLY the logo bigger (not the whole header) === */
+.brand-img,
+.mark {               /* whichever your header uses */
+  height: 64px;       /* up from ~40–56px */
+  width: auto;
+  vertical-align: middle;
 }
 
-.user-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    margin: 0 auto 15px;
-    display: block;
+/* === Department Selection buttons: match Program button look/feel === */
+.button-list .dept-btn{
+  /* Same sizing as the program (degree) button */
+  min-height: 64px;
+  padding: 18px 24px;
+  font-size: 20px;
+  font-weight: 800;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.22);     /* same border weight */
+  box-shadow: 0 6px 16px rgba(0,0,0,.35), inset 0 -2px 0 rgba(0,0,0,.25);
+
+  /* Keep long titles from looking “off” by wrapping to a single line */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  white-space: nowrap;           /* prevent multi-line height changes */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.user-name {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 5px;
+/* Badge inside the button stays perfectly centered */
+.button-list .dept-btn .pill{
+  margin-left: 12px;
+  line-height: 1;
+  vertical-align: middle;
 }
 
-.user-email {
-    font-size: 14px;
-    color: #666;
+/* Hover/focus definition consistent with programs page */
+.button-list .dept-btn:hover{
+  background: #0c8a63;
+  transform: translateY(-2px);
+  border-color: #fdb913;
+  box-shadow: 0 10px 24px rgba(0,0,0,.45), 0 0 0 2px rgba(253,185,19,.18);
+}
+.button-list .dept-btn:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(253,185,19,.35);
+}
+/* === Header: logo size (pick ONE value here) === */
+.brand-img,
+.mark {
+  height: 64px;      /* change to 56px if you prefer slightly smaller */
+  width: auto;
+  vertical-align: middle;
 }
 
-h1 {
-    color: #333;
-    margin-bottom: 20px;
-    font-size: 32px;
-    font-weight: 600;
+/* === Unify Department + Program buttons (look & behavior) === */
+.button-list .dept-btn,
+.button-list .degree-btn {
+  min-height: 64px;
+  padding: 18px 24px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: .3px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.28);
+  background: #006747;
+  box-shadow: 0 6px 16px rgba(0,0,0,.35), inset 0 -2px 0 rgba(0,0,0,.25);
+
+  /* Center long labels perfectly */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  /* Prevent wrap-induced height jumps */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-p {
-    color: #666;
-    margin-bottom: 15px;
-    line-height: 1.6;
+.button-list .dept-btn .pill,
+.button-list .degree-btn .pill {
+  margin-left: 12px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+/* Shared hover/focus states */
+.button-list .dept-btn:hover,
+.button-list .degree-btn:hover {
+  background: #0c8a63;
+  transform: translateY(-2px);
+  border-color: #fdb913;
+  box-shadow: 0 10px 24px rgba(0,0,0,.45), 0 0 0 2px rgba(253,185,19,.18);
+}
+.button-list .dept-btn:focus-visible,
+.button-list .degree-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(253,185,19,.35);
+}
+/* Optional: deepen the glass card head a touch */
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+}
+
+/* Optional: make the back button clearly secondary */
+#back-btn {
+  background: #6c757d !important;
+  color: #0e1a1d !important;
+  border: 1px solid rgba(255,255,255,.18) !important;
+}
+#back-btn:hover {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+}
+/* OVERRIDE: make degree-page buttons (program + back) normal size again */
+.button-list .degree-btn{
+  min-height: 52px !important;   /* was 64px */
+  padding: 12px 20px !important;  /* slimmer padding; matches your back button */
+  /* keep your existing font-size; adjust if you want:
+     font-size: 18px;
+  */
+}
+
+/* keep the badge aligned nicely at this height */
+.button-list .degree-btn .pill{
+  margin-left: 12px;
+  line-height: 1;
+  vertical-align: middle;
+}
+/* Degrees page — shrink ONLY the program button(s) back to normal */
+#program-list .degree-btn{
+  min-height: 52px !important;
+  padding: 12px 20px !important;
+  font-size: 18px;              /* tweak if you want */
+}
+
+/* (Optional) keep the Back button matching the slimmer size */
+#back-btn{
+  min-height: 52px;
+  padding: 12px 20px;
+  font-size: 16px;
+}
+
+/* (Optional) mobile tune */
+@media (max-width: 640px){
+  #program-list .degree-btn,
+  #back-btn{
+    min-height: 48px !important;
+    padding: 10px 16px !important;
     font-size: 16px;
-}
-
-.actions {
-    margin-top: 30px;
-}
-
-.sign-out-btn {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.sign-out-btn:hover {
-    background: #c82333;
-}
-
-@media (max-width: 480px) {
-    .placeholder-card {
-        padding: 30px 20px;
-    }
-    
-    h1 {
-        font-size: 28px;
-    }
+  }
 }

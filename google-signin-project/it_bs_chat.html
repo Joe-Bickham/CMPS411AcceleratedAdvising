@@ -23,8 +23,18 @@
       display:flex; justify-content:space-between; align-items:center;
       max-width:1200px; width:100%; margin:20px auto 10px; padding:0 20px;
     }
-    .brand{display:flex; align-items:center; gap:10px; font-weight:800;}
-    .mark{width:38px; height:38px; border-radius:10px; background:linear-gradient(160deg,var(--gold),#ffd56b); box-shadow:0 6px 18px rgba(0,0,0,.25);}
+    .brand{display:flex; align-items:center; gap:18px; font-weight:800;}
+    /* Logo: no background, scalable */
+    .mark{
+      height: 80px;            /* tweak 72–96px to taste */
+      width: auto;
+      display:inline-block;
+      object-fit:contain;
+      background:none;
+      border-radius:0;
+      box-shadow:none;
+      vertical-align:middle;
+    }
     .user-controls{display:flex; align-items:center; gap:12px;}
     .user-meta{opacity:.9; font-size:14px; white-space:nowrap;}
     .signout{background:#d94b4b; color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:700; cursor:pointer;}
@@ -63,7 +73,8 @@
 <body>
   <div class="top-bar">
     <div class="brand">
-      <div class="mark" aria-hidden="true"></div>
+      <!-- Your SVG file lives at assets/kaizenexus_logo.svg -->
+      <img class="mark" src="assets/kaizenexus_logo.svg" alt="Kaizenexus logo">
       Accelerated Advising
       <span class="prog-pill" id="prog-pill">IT, BS • 2024–2025</span>
     </div>
@@ -80,7 +91,6 @@
         <section class="panel">
           <div class="head">
             <span>Chat · Prereqs · Eligibility · Suggestions</span>
-            <!-- NEW: Year / Term selector -->
             <div class="stack">
               <label for="year" class="small">Year</label>
               <select id="year">
@@ -99,7 +109,7 @@
           <div class="body">
             <div id="chat" class="chat-body"></div>
             <div class="composer">
-              <input id="input" class="input" type="text" placeholder='e.g., "prereqs for CMPS 3900", "can I take CMPS 4310?", "suggest next courses"' />
+              <input id="input" class="input" type="text" placeholder='e.g., "prereqs for CMPS 3900", "can I take CMPS 4310?", "suggest next courses" — or ask things like "Year 2 Spring", "science sequence", "Group 4 electives"' />
               <button id="send" class="btn">Ask</button>
             </div>
           </div>
@@ -131,34 +141,25 @@
     </div>
   </div>
 
-  <!-- Load catalog:
-       1) Try backend live JSON (http://localhost:4000/api/catalog/it-bs)
-       2) Fallback to window.CATALOG_MODEL if included elsewhere
-  -->
+  <!-- Catalog + helpers -->
   <script>
-    // Lightweight semester plan (kept in the UI for the demo).
-    // YEAR 1 aligned to catalog screenshot.
+    // Semester plan used to filter suggestions
     const SEMESTER_PLAN = {
       "Year1-Fall":  ["CMPS 1610","MATH 1630","ENGL 1010","HUMN 1XXX","SOCS 1XXX","SE 101"],
-      // include both discrete options; eligibility will determine which fits
       "Year1-Spring":["CMPS 2800","MATH 2410","ENGL 1020","ARTS 1XXX","CMPS 2570","MATH 2230"],
-
-      // placeholders for later years (leave as-is for now)
       "Year2-Fall":  ["CMPS 2900","CMPS 2940","CMPS 2850","CMPS 2570"],
       "Year2-Spring":["CMPS 3750","CMPS 3900","CMPS 3150","CMPS 3830"],
       "Year3-Fall":  ["CMPS 3290","CMPS 4150","CMPS 3390","CMPS 4200"],
-      "Year3-Spring":["CMPS 4310","CMPS 4820","CMPS 4110"],         // Capstone I shows after 4150+4310 met
+      "Year3-Spring":["CMPS 4310","CMPS 4820","CMPS 4110"],
       "Year4-Fall":  ["Group4/Elective","Group5/Elective"],
       "Year4-Spring":["Group4/Elective","Group5/Elective"]
     };
 
-    // ----- helpers
     const norm = s => String(s).replace(/\s+/g,'').toUpperCase();
     const byCode = (list=[]) => Object.fromEntries(list.map(c => [norm(c.code), c]));
     const labelFor = (y,t) => `${y}-${t}`;
     const getPlanCodes = (y,t) => (SEMESTER_PLAN[labelFor(y,t)] || []);
 
-    // Try to fetch catalog from backend; fallback to local global if present.
     async function loadCatalog() {
       try {
         const r = await fetch('http://localhost:4000/api/catalog/it-bs', {mode:'cors'});
@@ -172,14 +173,92 @@
     }
   </script>
 
-  <!-- Advising engine -->
+  <!-- Advising engine + builtin FAQ "chatbot" -->
   <script>
     (function(){
       let MODEL = { program:null, courses:[], groups:[] };
       let COURSE_INDEX = {};
       const completed = new Set();
 
-      // eligibility helpers
+      /* ---------- Built-in knowledge base for quick Q&A ---------- */
+      const KB = {
+        total_hours: 120,
+        grade_requirement:
+          "A grade of “C” or higher is required in all major courses. MATH 1630 and MATH 2410 also require a C or higher.",
+        science_sequence: {
+          sequences: [
+            "BIOL 1510/BIOL 1530 + BIOL 1520/BIOL 1540",
+            "CHEM 1210/CLAB 1230 + CHEM 1220/CLAB 1240",
+            "PHYS 1910/PLAB 1930 + PHYS 1920/PLAB 1940"
+          ],
+          extra:
+            "If you choose the Chemistry or Physics sequence, the additional 3-hour science + lab must be BIOL 1510/BIOL 1520. The 4th science should be from the same list."
+        },
+        writing: "ENGL 3220 — Introduction to Professional and Technical Writing",
+        speaking: "COMM 2110 — Introduction to Public Speaking",
+        plan: {
+          "Year1-Fall":  ["MATH 1630","ENGL Composition (Gen Ed)","HUMN (History/Philosophy Gen Ed)","CMPS 1610","SOCS (Gen Ed)","First Year Seminar"],
+          "Year1-Spring":["CMPS 2800","MATH 2410","Fine Arts (Gen Ed)","ENGL Composition (Gen Ed)","CMPS 2570 or MATH 2230"],
+          "Year2-Fall":  ["CMPS 2900 or CMPS 2930","CMPS 3900","ENGL (Humanities Lit/Lit Intensive)","COMM 2110","Natural Science + Lab"],
+          "Year2-Spring":["CMPS 2850","CMPS 2940","CMPS 3750","ENGL 3220","Natural Science + Lab"],
+          "Year3-Fall":  ["CMPS 3150","Social Science (Gen Ed)","Natural Science + Lab","Application Domain/Free Elective","Elective"],
+          "Year3-Spring":["CMPS 3830","CMPS 4310","CMPS 3290","Science Elective","CMPS 4150"],
+          "Year4-Fall":  ["CMPS 3390","CMPS 4200","CMPS Elective (Group 4)","Application Domain/Free Elective"],
+          "Year4-Spring":["CMPS 4110","CMPS 4820","CMPS Elective (Group 5)","Application Domain/Free Electives (2 courses)"]
+        },
+        electives: {
+          group4: ["CMPS 3210","CMPS 3890","CMPS 3940","CMPS 4080","CMPS 4090","CMPS 4550","CMPS 4940"],
+          group5: ["CMPS 3910","CMPS 4010","CMPS 4340","CMPS 4410","CMPS 4430","CMPS 4700","CMPS 4790","CMPS 4930"],
+          notes: "Some CS electives require additional mathematics."
+        }
+      };
+
+      function normalizeText(s){ return String(s||"").toLowerCase(); }
+      function planText(year, term){
+        const key = `${year}-${term}`;
+        const items = KB.plan[key];
+        if (!items) return `I don’t have a preset plan for ${year} ${term}.`;
+        return `Suggested courses for ${year} ${term}:\n• ${items.join('\n• ')}`;
+      }
+      function faqAnswer(q){
+        const t = normalizeText(q);
+
+        if (/(total|how many).*(hours|credits)/.test(t)) return `Total semester hours required: ${KB.total_hours}.`;
+        if (/grade|minimum|c or higher|major/.test(t)) return KB.grade_requirement;
+        if (/science.*(sequence|lab)|biology|chemistry|physics/.test(t)) {
+          return `Science sequence with labs:\n• ${KB.science_sequence.sequences.join('\n• ')}\n${KB.science_sequence.extra}`;
+        }
+        if (/writing|engl ?3220/.test(t)) return KB.writing;
+        if (/speaking|comm ?2110/.test(t)) return KB.speaking;
+
+        const y = t.match(/year\s*([1-4])/);
+        const term = t.match(/\b(fall|spring)\b/i);
+        if (y && term) {
+          const year = `Year${y[1]}`;
+          const termCap = term[0][0].toUpperCase() + term[0].slice(1).toLowerCase();
+          return planText(year, termCap);
+        }
+        const onlyYear = t.match(/^year\s*([1-4])$/);
+        if (onlyYear) {
+          const yr = `Year${onlyYear[1]}`;
+          return `${planText(yr,"Fall")}\n\n${planText(yr,"Spring")}`;
+        }
+
+        if (/elective/.test(t)) {
+          if (/group\s*4|it elective|applied/i.test(t)) {
+            return `CMPS Elective (Group 4):\n• ${KB.electives.group4.join('\n• ')}\n${KB.electives.notes}`;
+          }
+          if (/group\s*5|theor/i.test(t)) {
+            return `CMPS Elective (Group 5):\n• ${KB.electives.group5.join('\n• ')}\n${KB.electives.notes}`;
+          }
+          return `Electives:\n• Group 4: ${KB.electives.group4.join(', ')}\n• Group 5: ${KB.electives.group5.join(', ')}\n${KB.electives.notes}`;
+        }
+
+        return "I can answer: “how many hours to graduate?”, “what’s the science sequence?”, “Year 2 Spring?”, “Group 4 electives?”, “grade requirements?”, etc.";
+      }
+      /* ----------------------------------------------------------- */
+
+      // Eligibility helpers
       const get = code => COURSE_INDEX[norm(code)] || null;
       const prereqsOf = code => (get(code)?.prereqs) || [];
       const isEligible = (code, doneSet) => {
@@ -197,7 +276,6 @@
           const have = from.filter(c => done.has(c)).length;
           if (have < need) out.push(`${g.label}: need ${need - have} more from [${(g.from||[]).join(', ')}]`);
         }
-        // science sequence check (light)
         const sci = (MODEL.program?.rules||[]).find(r=>r.type==='science_sequence');
         if (sci) {
           const prefixes = [...done].map(code => code.replace(/\d.*/, ''));
@@ -207,22 +285,19 @@
         return out;
       }
 
-      // semester suggestion (filter by plan)
+      // Suggestion builder
       function suggestNext(doneSet, nextKey) {
         const done = new Set([...doneSet].map(norm));
         const all = (MODEL.courses||[]);
         const eligible = all
           .filter(c => !done.has(norm(c.code)))
           .filter(c => isEligible(c.code, done));
-
-        // limit to semester plan
         const target = new Set((SEMESTER_PLAN[nextKey]||[]).map(norm));
         const filtered = eligible.filter(c => target.has(norm(c.code)));
-
         return { eligible: filtered, notes: unmetProgramRules(done) };
       }
 
-      // UI setup
+      // UI glue
       const $ = q => document.querySelector(q);
       const chat = $('#chat'), input = $('#input'), send = $('#send'), chips = $('#chips'), suggestBtn = $('#suggest');
       const yearSel = $('#year'), termSel = $('#term');
@@ -235,16 +310,12 @@
         chat.scrollTop = chat.scrollHeight;
       }
 
-      // UPDATED: Chips follow the selected Year/Term and show placeholders as disabled
       function renderChips(){
         chips.innerHTML = '';
-
         const planCodes = getPlanCodes(yearSel.value, termSel.value).map(norm);
         const uniqueCodes = Array.from(new Set(planCodes));
-
         uniqueCodes.forEach(codeKey => {
           const c = COURSE_INDEX[codeKey];
-
           if (c) {
             const on = completed.has(codeKey);
             const btn = document.createElement('button');
@@ -278,12 +349,13 @@
         m = text.match(/^\s*can\s+i\s+take\s+([A-Za-z]{2,}\s*\d{3,4})/i);
         if (m) return { kind:'eligible', code:m[1] };
         if (/^\s*suggest(\s+next)?\s+courses/i.test(text)) return { kind:'suggest' };
-        return { kind:'help' };
+        return { kind:'faq_freeform' };  // everything else → FAQ chatbot
       }
 
+      // UPDATED: route freeform to FAQ
       function handleQuery(input){
         const cmd = parseQuery(input);
-        if (cmd.kind==='help') return {type:'help', text:'Try: "prereqs for CMPS 3900", "can I take CMPS 4310?", or "suggest next courses".'};
+
         if (cmd.kind==='prereqs') {
           const p = prereqsOf(cmd.code);
           if (!get(cmd.code)) return {type:'error', text:`I can't find ${cmd.code} in this catalog.`};
@@ -299,12 +371,15 @@
           const nextKey = labelFor(yearSel.value, termSel.value);
           return {type:'suggest', ...suggestNext(completed, nextKey)};
         }
-        return {type:'help', text:'Try: "prereqs for CMPS 3900", "can I take CMPS 4310?", or "suggest next courses".'};
+
+        // default: built-in FAQ
+        return {type:'faq', text: faqAnswer(input)};
       }
 
       function renderResponse(res){
         if (!res) return;
         if (res.type==='help' || res.type==='error') return addMsg(res.text);
+        if (res.type==='faq'){ addMsg(res.text); return; }             // NEW
         if (res.type==='prereqs'){
           const list = res.prereqs?.length ? res.prereqs.join(', ') : 'None';
           return addMsg(`Prereqs for ${res.code}: ${list}`);
@@ -334,11 +409,10 @@
         renderResponse({type:'suggest', ...suggestNext(completed, nextKey)});
       });
 
-      // Re-render chips when Year/Term changes
       yearSel.addEventListener('change', renderChips);
       termSel.addEventListener('change', renderChips);
 
-      // sign out + header info
+      // header user-info + signout
       try{
         const rawUser = localStorage.getItem('aa_user');
         if(rawUser){
@@ -362,10 +436,8 @@
         }
       }catch{}
 
-      // Check if user came from Computer Science department
       const selectedDept = localStorage.getItem('aa_department');
       if (selectedDept !== 'computer-science') {
-        // Redirect back to department selection if not from Computer Science
         const IN_SUBFOLDER = window.location.pathname.replace(/\\/g,'/').includes('/google-signin-project/');
         const DEPT_PAGE = IN_SUBFOLDER ? 'department-selection.html' : 'google-signin-project/department-selection.html';
         window.location.assign(DEPT_PAGE);
@@ -378,7 +450,7 @@
         COURSE_INDEX = byCode(MODEL.courses||[]);
         renderChips();
         addMsg('Advisor view ready. Toggle completed courses (right), then ask about prerequisites, eligibility, or press "Suggest next courses".');
-        addMsg('Tip: set Year/Term first; suggestions will match that semester only.');
+        addMsg('Tip: ask things like "how many hours to graduate", "science sequence", "Year 2 Spring", or "Group 4 electives".');
       })();
     })();
   </script>

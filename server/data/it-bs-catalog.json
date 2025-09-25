@@ -1,104 +1,98 @@
 {
   "program": {
     "key": "it-bs-2024-25",
-    "name": "Information Technology, BS",
-    "catalog_year": "2024-2025",
+    "title": "Information Technology, BS (2024–2025)",
     "total_hours": 120,
-    "min_grade_major": "C"
+    "rules": [
+      { "type": "grade_major_min", "value": "C", "note": "C or better in all major courses" },
+      {
+        "type": "science_sequence",
+        "choices": ["BIOL", "CHEM", "PHYS"],
+        "note": "Two-course science sequence with labs + one additional science + lab"
+      }
+    ]
   },
-
-  "plan": {
-    "year1": {
-      "Fall": [
-        { "code": "MATH 1630", "title": "Applied Calculus", "credits": 3 },
-        { "code": "ENGL 1010", "title": "English Composition I (Gen Ed)", "credits": 3 },
-        { "code": "HUMN 1XXX", "title": "Humanities (History/Philosophy Gen Ed)", "credits": 3 },
-        { "code": "CMPS 1610", "title": "Algorithm Design & Implementation I", "credits": 3 },
-        { "code": "SOCS 1XXX", "title": "Social Science (Gen Ed)", "credits": 3 },
-        { "code": "FYSE 1000", "title": "First Year Seminar", "credits": 2 }
-      ],
-      "Spring": [
-        { "code": "CMPS 2800", "title": "Algorithm Design & Implementation II", "credits": 3, "prereqs": ["CMPS 1610"] },
-        { "code": "MATH 2410", "title": "Elementary Statistics", "credits": 3 },
-        { "code": "ARTS 1XXX", "title": "Fine Arts (Gen Ed)", "credits": 3 },
-        { "code": "ENGL 1020", "title": "English Composition II (Gen Ed)", "credits": 3 },
-        {
-          "choiceGroup": "discrete",
-          "title": "Discrete Requirement",
-          "options": [
-            { "code": "CMPS 2570", "title": "Discrete Structures", "credits": 3 },
-            { "code": "MATH 2230", "title": "Foundations of Discrete Mathematics", "credits": 3 }
-          ]
-        }
-      ]
-    },
-    "year2": {
-      "Fall": [
-        { "code": "CMPS 2900", "title": "Web Systems", "credits": 3, "prereqs": ["CMPS 2800"] },
-        { "code": "CMPS 2940", "title": "Computer Organization", "credits": 3, "prereqs": ["CMPS 1610"] },
-        { "code": "CMPS 2850", "title": "Database Systems", "credits": 3, "prereqs": ["CMPS 2800"] },
-        { "code": "CMPS 2570", "title": "Discrete Structures", "credits": 3, "prereqs": ["CMPS 1610"] }
-      ],
-      "Spring": [
-        { "code": "CMPS 3750", "title": "Operating Systems", "credits": 3, "prereqs": ["CMPS 2940"] },
-        { "code": "CMPS 3900", "title": "Software Engineering", "credits": 3, "prereqs": ["CMPS 2800"] },
-        { "code": "CMPS 3150", "title": "Data Structures & Algorithms", "credits": 3, "prereqs": ["CMPS 2800", "CMPS 2570"] },
-        { "code": "CMPS 3830", "title": "Computer Networks", "credits": 3, "prereqs": ["CMPS 2940"] }
-      ]
-    },
-    "year3": {
-      "Fall": [
-        { "code": "CMPS 3290", "title": "Systems Administration", "credits": 3, "prereqs": ["CMPS 3750"] },
-        { "code": "CMPS 4150", "title": "Software Project Management", "credits": 3, "prereqs": ["CMPS 3900"] },
-        { "code": "CMPS 3390", "title": "Information Security", "credits": 3, "prereqs": ["CMPS 3830"] },
-        { "code": "CMPS 4200", "title": "Cloud Computing", "credits": 3, "prereqs": ["CMPS 3750", "CMPS 3830"] }
-      ],
-      "Spring": [
-        { "code": "CMPS 4310", "title": "Capstone I", "credits": 3, "prereqs": ["CMPS 4150"] },
-        { "code": "CMPS 4820", "title": "Advanced Networking", "credits": 3, "prereqs": ["CMPS 3830"] },
-        { "code": "CMPS 4110", "title": "Mobile Application Development", "credits": 3, "prereqs": ["CMPS 3900"] }
-      ]
-    },
-    "year4": {
-      "Fall": [
-        { "code": "CMPS 4320", "title": "Capstone II", "credits": 3, "prereqs": ["CMPS 4310"] },
-        { "code": "CMPS 4XXX", "title": "IT Elective", "credits": 3 }
-      ],
-      "Spring": [
-        { "code": "CMPS 4XXX", "title": "IT Elective", "credits": 3 },
-        { "code": "CMPS 4XXX", "title": "IT Elective", "credits": 3 }
-      ]
-    }
-  },
-  
   "courses": [
-    { "code": "MATH 1630", "title": "Applied Calculus", "credits": 3 },
-    { "code": "ENGL 1010", "title": "English Composition I (Gen Ed)", "credits": 3 },
-    { "code": "HUMN 1XXX", "title": "Humanities (History/Philosophy Gen Ed)", "credits": 3 },
-    { "code": "CMPS 1610", "title": "Algorithm Design & Implementation I", "credits": 3 },
-    { "code": "SOCS 1XXX", "title": "Social Science (Gen Ed)", "credits": 3 },
-    { "code": "FYSE 1000", "title": "First Year Seminar", "credits": 2 },
-    { "code": "CMPS 2800", "title": "Algorithm Design & Implementation II", "credits": 3, "prereqs": ["CMPS 1610"] },
-    { "code": "MATH 2410", "title": "Elementary Statistics", "credits": 3 },
-    { "code": "ARTS 1XXX", "title": "Fine Arts (Gen Ed)", "credits": 3 },
-    { "code": "ENGL 1020", "title": "English Composition II (Gen Ed)", "credits": 3 },
-    { "code": "CMPS 2570", "title": "Discrete Structures", "credits": 3, "prereqs": ["CMPS 1610"] },
-    { "code": "MATH 2230", "title": "Foundations of Discrete Mathematics", "credits": 3 },
-    { "code": "CMPS 2900", "title": "Web Systems", "credits": 3, "prereqs": ["CMPS 2800"] },
-    { "code": "CMPS 2940", "title": "Computer Organization", "credits": 3, "prereqs": ["CMPS 1610"] },
-    { "code": "CMPS 2850", "title": "Database Systems", "credits": 3, "prereqs": ["CMPS 2800"] },
-    { "code": "CMPS 3750", "title": "Operating Systems", "credits": 3, "prereqs": ["CMPS 2940"] },
-    { "code": "CMPS 3900", "title": "Software Engineering", "credits": 3, "prereqs": ["CMPS 2800"] },
-    { "code": "CMPS 3150", "title": "Data Structures & Algorithms", "credits": 3, "prereqs": ["CMPS 2800", "CMPS 2570"] },
-    { "code": "CMPS 3830", "title": "Computer Networks", "credits": 3, "prereqs": ["CMPS 2940"] },
-    { "code": "CMPS 3290", "title": "Systems Administration", "credits": 3, "prereqs": ["CMPS 3750"] },
-    { "code": "CMPS 4150", "title": "Software Project Management", "credits": 3, "prereqs": ["CMPS 3900"] },
-    { "code": "CMPS 3390", "title": "Information Security", "credits": 3, "prereqs": ["CMPS 3830"] },
-    { "code": "CMPS 4200", "title": "Cloud Computing", "credits": 3, "prereqs": ["CMPS 3750", "CMPS 3830"] },
-    { "code": "CMPS 4310", "title": "Capstone I", "credits": 3, "prereqs": ["CMPS 4150"] },
-    { "code": "CMPS 4820", "title": "Advanced Networking", "credits": 3, "prereqs": ["CMPS 3830"] },
-    { "code": "CMPS 4110", "title": "Mobile Application Development", "credits": 3, "prereqs": ["CMPS 3900"] },
-    { "code": "CMPS 4320", "title": "Capstone II", "credits": 3, "prereqs": ["CMPS 4310"] },
-    { "code": "CMPS 4XXX", "title": "IT Elective", "credits": 3 }
+    { "code": "SE 101",    "title": "First Year Seminar", "hours": 2, "required": true,  "prereqs": [], "plan": "Year1-Fall" },
+
+    { "code": "ENGL 1010", "title": "English Composition I (Gen Ed)", "hours": 3, "required": true, "prereqs": [], "plan": "Year1-Fall" },
+    { "code": "ENGL 1020", "title": "English Composition II",          "hours": 3, "required": true, "prereqs": [], "plan": "Year1-Spring" },
+    { "code": "ENGL LIT",  "title": "ENGL from Humanities Lit/Lit-Intensive (Gen Ed)", "hours": 3, "required": true, "prereqs": [], "plan": "Year2-Fall", "placeholder": true },
+
+    { "code": "MATH 1630", "title": "Applied Calculus",   "hours": 3, "required": true, "prereqs": [], "plan": "Year1-Fall" },
+    { "code": "MATH 2410", "title": "Elementary Statistics", "hours": 3, "required": true, "prereqs": [], "plan": "Year1-Spring" },
+
+    { "code": "CMPS 1610", "title": "Algorithm Design & Implementation I", "hours": 3, "required": true, "prereqs": [], "plan": "Year1-Fall" },
+    { "code": "CMPS 2800", "title": "Algorithm Design & Implementation II", "hours": 3, "required": true, "prereqs": [], "plan": "Year1-Spring" },
+
+    { "code": "CMPS 2570", "title": "Discrete Structure",                      "hours": 3, "required": false, "prereqs": [], "plan": "Year1-Spring" },
+    { "code": "MATH 2230", "title": "Foundations of Discrete Mathematics",     "hours": 3, "required": false, "prereqs": [], "plan": "Year1-Spring" },
+
+    { "code": "CMPS 2900", "title": "Computer Organization",                   "hours": 3, "required": false, "prereqs": [], "plan": "Year2-Fall" },
+    { "code": "CMPS 2930", "title": "Intro to Assembly Language",              "hours": 3, "required": false, "prereqs": [], "plan": "Year2-Fall" },
+
+    { "code": "CMPS 3900", "title": "Data Structures",                         "hours": 3, "required": true,  "prereqs": [], "plan": "Year2-Fall" },
+    { "code": "CMPS 2940", "title": "Internet Programming",                    "hours": 3, "required": true,  "prereqs": [], "plan": "Year2-Spring" },
+    { "code": "CMPS 2850", "title": "Software Engineering",                    "hours": 3, "required": true,  "prereqs": [], "plan": "Year2-Spring" },
+    { "code": "CMPS 3750", "title": "Computer Architecture",                   "hours": 3, "required": true,  "prereqs": [], "plan": "Year2-Spring" },
+
+    { "code": "CMPS 3150", "title": "System Administration",                   "hours": 3, "required": true,  "prereqs": [], "plan": "Year3-Fall" },
+    { "code": "CMPS 3830", "title": "Information Systems",                     "hours": 3, "required": true,  "prereqs": [], "plan": "Year3-Spring" },
+    { "code": "CMPS 4310", "title": "Operating Systems",                       "hours": 3, "required": true,  "prereqs": [], "plan": "Year3-Spring" },
+    { "code": "CMPS 3290", "title": "Computer Networking & Security",          "hours": 3, "required": true,  "prereqs": [], "plan": "Year3-Spring" },
+    { "code": "CMPS 4150", "title": "Integrated Technologies for Enterprise",  "hours": 3, "required": true,  "prereqs": [], "plan": "Year3-Spring" },
+
+    { "code": "CMPS 3390", "title": "Database Administration",                 "hours": 3, "required": true,  "prereqs": [], "plan": "Year4-Fall" },
+    { "code": "CMPS 4200", "title": "Human-Computer Interaction",              "hours": 3, "required": true,  "prereqs": [], "plan": "Year4-Fall" },
+
+    { "code": "CMPS 4110", "title": "Capstone I",                              "hours": 3, "required": true,  "prereqs": [], "plan": "Year4-Spring" },
+    { "code": "CMPS 4820", "title": "Current Trends in Computer Science",      "hours": 3, "required": true,  "prereqs": [], "plan": "Year4-Spring" },
+
+    { "code": "COMM 2110", "title": "Intro to Public Speaking (Gen Ed)",       "hours": 3, "required": true,  "prereqs": [], "plan": "Year2-Fall" },
+    { "code": "ENGL 3220", "title": "Intro to Professional & Technical Writing","hours": 3,"required": true,  "prereqs": [], "plan": "Year2-Spring" },
+
+   
+    { "code": "HUMN 1XXX", "title": "Humanities (History/Philosophy) Gen Ed",  "hours": 3, "required": true, "prereqs": [], "plan": "Year1-Fall", "placeholder": true },
+    { "code": "SOCS 1XXX", "title": "Social Science Gen Ed",                   "hours": 3, "required": true, "prereqs": [], "plan": "Year1-Fall", "placeholder": true },
+    { "code": "ARTS 1XXX", "title": "Fine Arts Gen Ed",                        "hours": 3, "required": true, "prereqs": [], "plan": "Year1-Spring", "placeholder": true },
+
+    
+    { "code": "SCI 1 (Seq+Lab)", "title": "Science Sequence Course 1 + Lab", "hours": 4, "required": true, "placeholder": true, "plan": "Year2-Fall" },
+    { "code": "SCI 2 (Seq+Lab)", "title": "Science Sequence Course 2 + Lab", "hours": 4, "required": true, "placeholder": true, "plan": "Year2-Spring" },
+    { "code": "SCI 3 (Lab)",     "title": "Additional Science + Lab",        "hours": 4, "required": true, "placeholder": true, "plan": "Year3-Fall" },
+    { "code": "SCI ELECT",       "title": "Science Elective (3h)",           "hours": 3, "required": true, "placeholder": true, "plan": "Year3-Spring" }
+  ],
+
+  "groups": [
+    {
+      "id": "discrete-either",
+      "label": "Discrete requirement",
+      "rule": { "min_courses": 1 },
+      "from": ["CMPS 2570", "MATH 2230"]
+    },
+    {
+      "id": "org-or-asm",
+      "label": "Organization/Assembly choice",
+      "rule": { "min_courses": 1 },
+      "from": ["CMPS 2900", "CMPS 2930"]
+    },
+    {
+      "id": "cmps-elective-group4",
+      "label": "CMPS Elective (Group 4)",
+      "rule": { "min_courses": 1 },
+      "from": ["CMPS 3210","CMPS 3890","CMPS 3940","CMPS 4080","CMPS 4090","CMPS 4550","CMPS 4940"]
+    },
+    {
+      "id": "cmps-elective-group5",
+      "label": "CMPS Elective (Group 5)",
+      "rule": { "min_courses": 1 },
+      "from": ["CMPS 3910","CMPS 4010","CMPS 4340","CMPS 4410","CMPS 4430","CMPS 4700","CMPS 4790","CMPS 4930"]
+    },
+    {
+      "id": "application-domain",
+      "label": "Application domain / free electives",
+      "rule": { "min_hours": 12 },
+      "note": "Recommended to be a cohesive domain; can be free electives."
+    }
   ]
 }
