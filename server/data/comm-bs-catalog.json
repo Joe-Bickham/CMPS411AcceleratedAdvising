@@ -1,0 +1,63 @@
+{
+  "program": {
+    "key": "comm-bs-2024-25",
+    "name": "Communication, BA, Sports Communication",
+    "catalog_year": "2024-2025",
+    "total_hours": 120,
+    "min_grade_major": "C"
+  },
+  
+  "courses": [
+    {
+      "code": "COMM 1010",
+      "title": "Introduction to Communication",
+      "credits": 3,
+      "description": "Foundational course in communication theory and practice"
+    },
+    {
+      "code": "COMM 2110", 
+      "title": "Public Speaking",
+      "credits": 3,
+      "prereqs": ["COMM 1010"],
+      "description": "Development of public speaking skills and presentation techniques"
+    },
+    {
+      "code": "COMM 3200",
+      "title": "Sports Communication",
+      "credits": 3,
+      "prereqs": ["COMM 2110"],
+      "description": "Specialized communication in sports media and broadcasting"
+    },
+    {
+      "code": "COMM 3300",
+      "title": "Media Writing",
+      "credits": 3,
+      "prereqs": ["COMM 1010"],
+      "description": "Writing for various media platforms and audiences"
+    },
+    {
+      "code": "COMM 4400",
+      "title": "Communication Capstone",
+      "credits": 3,
+      "prereqs": ["COMM 3200", "COMM 3300"],
+      "description": "Senior capstone project in communication"
+    }
+  ],
+  
+  "requirements": {
+    "core_communication": {
+      "min_courses": 5,
+      "courses": ["COMM 1010", "COMM 2110", "COMM 3200", "COMM 3300", "COMM 4400"]
+    },
+    "general_education": {
+      "total_hours": 42,
+      "note": "Standard university general education requirements"
+    },
+    "electives": {
+      "total_hours": 33,
+      "note": "Free electives to reach 120 total hours"
+    }
+  },
+  
+  "note": "This is a basic catalog structure. More detailed course information and requirements need to be added."
+}

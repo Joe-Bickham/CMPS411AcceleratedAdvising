@@ -99,8 +99,8 @@
           <div class="body">
             <div id="chat" class="chat-body"></div>
             <div class="composer">
-              <input id="input" class="input" type="text" placeholder='e.g., "prereqs for CMPS 3900", "can I take CMPS 4310?", "suggest next courses"' />
-              <button id="send" class="btn">Ask</button>
+              <input id="input" class="input" type="text" placeholder='Ask me anything about the Information Technology program...' />
+              <button id="send" class="btn">Ask Claude</button>
             </div>
           </div>
         </section>
@@ -110,6 +110,7 @@
           <div class="head">Completed Courses
             <div class="stack">
               <button id="suggest" class="btn">Suggest next courses</button>
+              <button id="timeline" class="btn">Create Timeline</button>
             </div>
           </div>
           <div class="body">
@@ -271,6 +272,95 @@
         });
       }
 
+      // Claude AI integration functions
+      async function queryClaudeAI(question) {
+        try {
+          addMsg('🤖 Claude is analyzing your question...', false);
+          
+          const response = await fetch('http://localhost:4000/api/claude/advice', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              question: question,
+              courseData: MODEL,
+              completedCourses: Array.from(completed)
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            return { type: 'claude', text: data.advice };
+          } else {
+            throw new Error(data.error);
+          }
+        } catch (error) {
+          console.error('Claude query failed:', error);
+          return { type: 'error', text: 'Claude advisor temporarily unavailable. Try basic commands like "prereqs for CMPS 3900".' };
+        }
+      }
+
+      async function generateTimeline() {
+        try {
+          addMsg('🤖 Claude is creating your degree timeline...', false);
+          
+          const response = await fetch('http://localhost:4000/api/claude/timeline', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              completedCourses: Array.from(completed),
+              courseData: MODEL,
+              startingSemester: termSel.value,
+              targetGraduation: null
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            return { type: 'timeline', text: data.timeline };
+          } else {
+            throw new Error(data.error);
+          }
+        } catch (error) {
+          console.error('Timeline generation failed:', error);
+          return { type: 'error', text: 'Timeline generation temporarily unavailable.' };
+        }
+      }
+
+      async function getRecommendations() {
+        try {
+          addMsg('🤖 Claude is analyzing your progress for recommendations...', false);
+          
+          const response = await fetch('http://localhost:4000/api/claude/recommendations', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              completedCourses: Array.from(completed),
+              courseData: MODEL,
+              currentSemester: termSel.value
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            return { type: 'recommendations', text: data.recommendations };
+          } else {
+            throw new Error(data.error);
+          }
+        } catch (error) {
+          console.error('Recommendations failed:', error);
+          return { type: 'error', text: 'Recommendations temporarily unavailable.' };
+        }
+      }
+
       function parseQuery(q){
         const text = String(q||'').trim();
         let m = text.match(/^\s*prereq(?:s)?\s+for\s+([A-Za-z]{2,}\s*\d{3,4})/i);
@@ -278,12 +368,15 @@
         m = text.match(/^\s*can\s+i\s+take\s+([A-Za-z]{2,}\s*\d{3,4})/i);
         if (m) return { kind:'eligible', code:m[1] };
         if (/^\s*suggest(\s+next)?\s+courses/i.test(text)) return { kind:'suggest' };
+        if (/^\s*(create|generate|show).*timeline/i.test(text)) return { kind:'timeline' };
+        if (/^\s*(recommend|what.*should.*take|next.*courses)/i.test(text)) return { kind:'ai_recommend' };
         return { kind:'help' };
       }
 
-      function handleQuery(input){
+      async function handleQuery(input){
         const cmd = parseQuery(input);
-        if (cmd.kind==='help') return {type:'help', text:'Try: "prereqs for CMPS 3900", "can I take CMPS 4310?", or "suggest next courses".'};
+        
+        // Handle basic structured queries with existing logic
         if (cmd.kind==='prereqs') {
           const p = prereqsOf(cmd.code);
           if (!get(cmd.code)) return {type:'error', text:`I can't find ${cmd.code} in this catalog.`};
@@ -299,7 +392,30 @@
           const nextKey = labelFor(yearSel.value, termSel.value);
           return {type:'suggest', ...suggestNext(completed, nextKey)};
         }
-        return {type:'help', text:'Try: "prereqs for CMPS 3900", "can I take CMPS 4310?", or "suggest next courses".'};
+        
+        // Handle AI-powered queries
+        if (cmd.kind==='timeline') {
+          return await generateTimeline();
+        }
+        if (cmd.kind==='ai_recommend') {
+          return await getRecommendations();
+        }
+        
+        // For complex natural language queries, use Claude AI
+        const text = String(input||'').trim();
+        if (text.length > 20 ||
+            text.includes('plan') ||
+            text.includes('should I') ||
+            text.includes('when can') ||
+            text.includes('how many') ||
+            text.includes('what if') ||
+            text.includes('best') ||
+            text.includes('order')) {
+          return await queryClaudeAI(text);
+        }
+        
+        if (cmd.kind==='help') return {type:'help', text:'Try: "prereqs for CMPS 3900", "can I take CMPS 4310?", "create timeline", or ask any academic planning question!'};
+        return {type:'help', text:'Try: "prereqs for CMPS 3900", "can I take CMPS 4310?", "create timeline", or ask any academic planning question!'};
       }
 
       function renderResponse(res){
@@ -319,12 +435,16 @@
           else addMsg(`Suggested for ${yearSel.value} ${termSel.value}:\n${res.eligible.map(c=>`• ${c.code} — ${c.title}`).join('\n')}`);
           if (res.notes?.length) addMsg(`Program checks:\n- ${res.notes.join('\n- ')}`);
         }
+        if (res.type==='claude' || res.type==='timeline' || res.type==='recommendations'){
+          addMsg(`🤖 Claude AI Advisor:\n\n${res.text}`);
+        }
       }
 
-      function submit(){
+      async function submit(){
         const text = (input.value||'').trim(); if (!text) return;
         addMsg(text, true); input.value = '';
-        renderResponse(handleQuery(text));
+        const response = await handleQuery(text);
+        renderResponse(response);
       }
 
       send.addEventListener('click', submit);
@@ -332,6 +452,13 @@
       suggestBtn.addEventListener('click', ()=>{
         const nextKey = labelFor(yearSel.value, termSel.value);
         renderResponse({type:'suggest', ...suggestNext(completed, nextKey)});
+      });
+      
+      // Add timeline button functionality
+      const timelineBtn = $('#timeline');
+      timelineBtn.addEventListener('click', async ()=>{
+        const response = await generateTimeline();
+        renderResponse(response);
       });
 
       // Re-render chips when Year/Term changes

@@ -9,9 +9,11 @@
     "scrape:it": "node tools/scrape-it-bs.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.63.1",
     "axios": "^1.7.2",
     "cheerio": "^1.0.0-rc.12",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
     "express": "^4.19.2"
   }
 }

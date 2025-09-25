@@ -99,8 +99,8 @@
           <div class="body">
             <div id="chat" class="chat-body"></div>
             <div class="composer">
-              <input id="input" class="input" type="text" placeholder='e.g., "prereqs for CMPS 3900", "can I take CMPS 4310?", "suggest next courses"' />
-              <button id="send" class="btn">Ask</button>
+              <input id="input" class="input" type="text" placeholder='Ask me anything about the Communication program...' />
+              <button id="send" class="btn">Ask Claude</button>
             </div>
           </div>
         </section>
@@ -130,3 +130,110 @@
       </div>
     </div>
   </div>
+  
+  <!-- Pure Claude AI Chat Implementation -->
+  <script>
+    (function(){
+      const DEGREE_PROGRAM = 'Communication, BA, Sports Communication';
+      const PROGRAM_KEY = 'comm-bs-2024-25';
+      
+      // UI elements
+      const $ = q => document.querySelector(q);
+      const chat = $('#chat'), input = $('#input'), send = $('#send');
+      
+      function addMsg(text, me=false){
+        const div = document.createElement('div');
+        div.className = `msg${me?' me':''}`;
+        div.textContent = text;
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+      }
+      
+      // Pure Claude AI query function
+      async function queryClaudeAI(question) {
+        try {
+          addMsg('🤖 Claude is thinking...', false);
+          
+          const response = await fetch('http://localhost:4000/api/claude/degree-specific', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              question: question,
+              degreeProgram: DEGREE_PROGRAM,
+              programKey: PROGRAM_KEY
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            return { type: 'claude', text: data.advice };
+          } else {
+            throw new Error(data.error);
+          }
+        } catch (error) {
+          console.error('Claude query failed:', error);
+          return { type: 'error', text: 'Claude advisor temporarily unavailable. Please try again later.' };
+        }
+      }
+      
+      function renderResponse(res){
+        if (!res) return;
+        if (res.type === 'claude') {
+          addMsg(`🤖 Claude AI:\n\n${res.text}`);
+        } else if (res.type === 'error') {
+          addMsg(res.text);
+        }
+      }
+      
+      async function submit(){
+        const text = (input.value||'').trim(); 
+        if (!text) return;
+        
+        addMsg(text, true); 
+        input.value = '';
+        
+        const response = await queryClaudeAI(text);
+        renderResponse(response);
+      }
+      
+      // Event listeners
+      send.addEventListener('click', submit);
+      input.addEventListener('keydown', e=>{ if(e.key==='Enter') submit(); });
+      
+      // Sign out functionality
+      try{
+        const rawUser = localStorage.getItem('aa_user');
+        if(rawUser){
+          const u = JSON.parse(rawUser);
+          document.getElementById('user-info').textContent =
+            (u && u.name && u.email) ? `${u.name} (${u.email})` : 'Signed in';
+        }
+      }catch{}
+      
+      document.getElementById('signout').addEventListener('click', ()=>{
+        try{
+          localStorage.removeItem('aa_user');
+          localStorage.removeItem('aa_program');
+          localStorage.removeItem('aa_department');
+        }catch{}
+        window.location.assign('../index.html');
+      });
+      
+      // Check if user came from Communication & Media Studies department
+      const selectedDept = localStorage.getItem('aa_department');
+      if (selectedDept !== 'communication-media') {
+        const IN_SUBFOLDER = window.location.pathname.replace(/\\/g,'/').includes('/google-signin-project/');
+        const DEPT_PAGE = IN_SUBFOLDER ? 'department-selection.html' : 'google-signin-project/department-selection.html';
+        window.location.assign(DEPT_PAGE);
+        return;
+      }
+      
+      // Initialize chat
+      addMsg('Welcome to Communication program advising! I\'m Claude, your AI academic advisor.');
+      addMsg('Ask me anything about the Communication, BA, Sports Communication program - course requirements, career paths, scheduling, or any other questions you have.');
+      addMsg('Note: If I don\'t have specific information about something, I\'ll let you know that it needs to be added to my knowledge base.');
+    })();
+  </script>

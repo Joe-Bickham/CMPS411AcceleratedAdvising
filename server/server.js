@@ -3,12 +3,16 @@
 // Endpoints:
 //   GET /api/catalog/it-bs?year=YYYY-YYYY   -> returns {program, mode:'snapshot', courses, years}
 //   GET /api/core                           -> returns {courses}
+//   POST /api/claude/advice                 -> returns AI academic advice
+//   POST /api/claude/timeline               -> returns degree timeline
+//   POST /api/claude/recommendations        -> returns course recommendations
 
 import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import { getAcademicAdvice, generateDegreeTimeline, getCourseRecommendations } from './claude-service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -75,6 +79,24 @@ app.get("/api/catalog/it-bs", (req, res) => {
   }
 });
 
+// GET Communication catalog
+app.get("/api/catalog/comm-bs", (req, res) => {
+  try {
+    const COMM_FILE = path.join(DATA_DIR, "comm-bs-catalog.json");
+    const raw = readJson(COMM_FILE);
+    const { program, courses } = raw;
+    
+    res.json({
+      program: program || {},
+      courses: courses || [],
+      mode: "snapshot",
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Failed to load Communication catalog" });
+  }
+});
+
 // GET Core/GenEd
 app.get("/api/core", (req, res) => {
   try {
@@ -86,8 +108,126 @@ app.get("/api/core", (req, res) => {
   }
 });
 
+// Claude AI endpoints
+app.post("/api/claude/advice", async (req, res) => {
+  try {
+    const { question, courseData, completedCourses } = req.body;
+    
+    if (!question) {
+      return res.status(400).json({ error: 'Question is required' });
+    }
+    
+    const advice = await getAcademicAdvice(question, courseData || {}, completedCourses || []);
+    
+    res.json({
+      success: true,
+      advice: advice,
+      timestamp: new Date().toISOString(),
+      model: 'claude-3-5-sonnet'
+    });
+  } catch (error) {
+    console.error('Claude advice error:', error);
+    res.status(500).json({
+      error: 'Failed to get AI advice',
+      fallback: 'Please try asking about specific courses or prerequisites.'
+    });
+  }
+});
+
+app.post("/api/claude/timeline", async (req, res) => {
+  try {
+    const { completedCourses, courseData, startingSemester, targetGraduation } = req.body;
+    
+    const timeline = await generateDegreeTimeline(
+      completedCourses || [],
+      courseData || {},
+      startingSemester || 'Fall',
+      targetGraduation
+    );
+    
+    res.json({
+      success: true,
+      timeline: timeline,
+      timestamp: new Date().toISOString(),
+      model: 'claude-3-5-sonnet'
+    });
+  } catch (error) {
+    console.error('Claude timeline error:', error);
+    res.status(500).json({
+      error: 'Failed to generate timeline',
+      fallback: 'Please try the basic course suggestion feature.'
+    });
+  }
+});
+
+app.post("/api/claude/recommendations", async (req, res) => {
+  try {
+    const { completedCourses, courseData, currentSemester } = req.body;
+    
+    const recommendations = await getCourseRecommendations(
+      completedCourses || [],
+      courseData || {},
+      currentSemester || 'Fall'
+    );
+    
+    res.json({
+      success: true,
+      recommendations: recommendations,
+      timestamp: new Date().toISOString(),
+      model: 'claude-3-5-sonnet'
+    });
+  } catch (error) {
+    console.error('Claude recommendations error:', error);
+    res.status(500).json({
+      error: 'Failed to get recommendations',
+      fallback: 'Please try the basic course suggestion feature.'
+    });
+  }
+});
+
+// Degree-specific Claude AI endpoint
+app.post("/api/claude/degree-specific", async (req, res) => {
+  try {
+    const { question, degreeProgram, programKey } = req.body;
+    
+    if (!question) {
+      return res.status(400).json({ error: 'Question is required' });
+    }
+    
+    // Load appropriate catalog based on program
+    let catalogData = {};
+    try {
+      if (programKey === 'it-bs-2024-25') {
+        const itData = readJson(path.join(DATA_DIR, "it-bs-catalog.json"));
+        catalogData = itData;
+      } else if (programKey === 'comm-bs-2024-25') {
+        const commData = readJson(path.join(DATA_DIR, "comm-bs-catalog.json"));
+        catalogData = commData;
+      }
+    } catch (catalogError) {
+      console.log('Catalog not found, proceeding with limited data');
+    }
+    
+    const advice = await getAcademicAdvice(question, catalogData, [], degreeProgram);
+    
+    res.json({
+      success: true,
+      advice: advice,
+      timestamp: new Date().toISOString(),
+      model: 'claude-sonnet-4',
+      program: degreeProgram
+    });
+  } catch (error) {
+    console.error('Claude degree-specific advice error:', error);
+    res.status(500).json({
+      error: 'Failed to get AI advice',
+      fallback: 'Please try again later.'
+    });
+  }
+});
+
 // serve nothing else – this server is data-only
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-  console.log(`Catalog backend on http://localhost:${PORT}`);
+  console.log(`Catalog backend with Claude AI on http://localhost:${PORT}`);
 });
