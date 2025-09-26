@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\repos\\gregs-college-selection\\PdfScraper\\PdfScraper.csproj": {}
+    "C:\\repos\\AI Implementation branch\\PdfScraper\\PdfScraper.csproj": {}
   },
   "projects": {
-    "C:\\repos\\gregs-college-selection\\PdfScraper\\PdfScraper.csproj": {
+    "C:\\repos\\AI Implementation branch\\PdfScraper\\PdfScraper.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\repos\\gregs-college-selection\\PdfScraper\\PdfScraper.csproj",
+        "projectUniqueName": "C:\\repos\\AI Implementation branch\\PdfScraper\\PdfScraper.csproj",
         "projectName": "PdfScraper",
-        "projectPath": "C:\\repos\\gregs-college-selection\\PdfScraper\\PdfScraper.csproj",
+        "projectPath": "C:\\repos\\AI Implementation branch\\PdfScraper\\PdfScraper.csproj",
         "packagesPath": "C:\\Users\\ggriz\\.nuget\\packages\\",
-        "outputPath": "C:\\repos\\gregs-college-selection\\PdfScraper\\obj\\",
+        "outputPath": "C:\\repos\\AI Implementation branch\\PdfScraper\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

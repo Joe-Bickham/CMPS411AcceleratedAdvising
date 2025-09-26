@@ -7,57 +7,120 @@
     "min_grade_major": "C"
   },
   
-  "courses": [
-    {
-      "code": "COMM 1010",
-      "title": "Introduction to Communication",
-      "credits": 3,
-      "description": "Foundational course in communication theory and practice"
+"plan": {
+    "year1": {
+      "Fall": [
+        { "code": "NATURAL SCIENCES", "title": "Gen Ed ", "credits": 3 },
+        { "code": "FL 1010", "title": "Foriegn Language", "credits": 3 },
+        { "code": "HUMN 1XXX/PHIL 1XXX", "title": "Humanities (History/Philosophy Gen Ed)", "credits": 3 },
+        { "code": "COMM 2560", "title": "INTRODUCTION TO AUDIO PRODUCTION ††", "credits": 3 },
+        { "code": "FYSE 1000", "title": "First Year Seminar", "credits": 2 }
+      ],
+      "Spring": [
+        { "code": "COMM 1510", "title": "WRITING FOR THE MASS MEDIA ††", "credits": 3 },
+        { "code": "COMM 2570", "title": "INTRODUCTION TO TELEVISION PRODUCTION ††", "credits": 3 },
+        { "code": "FL 1020", "title": "Foriegn Language", "credits": 3 },
+        { "code": "ENGL 1020", "title": "English Composition II (Gen Ed)", "credits": 3 },
+        { "code": "LS 1020", "title": "INTRODUCTION TO INFORMATION RESEARCH", "credits": 3 }
+        
+      ]
     },
-    {
-      "code": "COMM 2110", 
-      "title": "Public Speaking",
-      "credits": 3,
-      "prereqs": ["COMM 1010"],
-      "description": "Development of public speaking skills and presentation techniques"
+    "year2": {
+      "Fall": [
+        { "code": "COMM 2600", "title": "FIELD VIDEO PRODUCTION AND EDITING ††", "credits": 3, "prereqs": ["CMPS 2800"] },
+        { "code": "COMM 2110", "title": "INTRODUCTION TO PUBLIC SPEAKING ††(Gen Ed)", "credits": 3, "prereqs": ["CMPS 1610"] },
+        { "code": "FL 2010", "title": "Foriegn Language", "credits": 3, "prereqs": ["CMPS 2800"] },
+        { "code": "HUMANITIES LIT/LIT INTENSIVE", "title": "HUMANITIES LIT/LIT INTENSIVE (Gen Ed)", "credits": 3, "prereqs": ["CMPS 1610"] },
+        { "code": "MATH 1XXX", "title": "MATH/ANALYTICAL REASONING LIST (Gen Ed)", "credits": 3 }
+      ],
+      "Spring": [
+        { "code": "COMM 3280", "title": "SURVEY OF SPORTS COMMUNICATION ††", "credits": 3, "prereqs": ["CMPS 2940"] },
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3, "prereqs": ["CMPS 2800"] },
+        { "code": "FL 2020", "title": "Foriegn Language", "credits": 3, "prereqs": ["CMPS 2800", "CMPS 2570"] },
+        { "code": "MATH 2410", "title": "ELEMENTARY STATISTICS (Gen Ed)", "credits": 3, "prereqs": ["CMPS 2940"] }
+      ]
     },
-    {
-      "code": "COMM 3200",
-      "title": "Sports Communication",
-      "credits": 3,
-      "prereqs": ["COMM 2110"],
-      "description": "Specialized communication in sports media and broadcasting"
+    "year3": {
+      "Fall": [
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3 },
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3 },
+        { "code": "SOCIAL SCIENCE", "title": "Social Science (Gen Ed)", "credits": 3 },
+        { "code": "ELCT XXXX", "title": "Elective", "credits": 3 },
+        { "code": "ELCT XXXX", "title": "Elective", "credits": 3 }
+      ],
+      "Spring": [
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3 },
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3 },
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3 },
+        { "code": "SOCIAL SCIENCE", "title": "Social Science (Gen Ed)", "credits": 3 },
+        { "code": "FA XXXX", "title": "Fine Arts (Gen Ed)", "credits": 3 }
+      ]
     },
-    {
-      "code": "COMM 3300",
-      "title": "Media Writing",
-      "credits": 3,
-      "prereqs": ["COMM 1010"],
-      "description": "Writing for various media platforms and audiences"
-    },
-    {
-      "code": "COMM 4400",
-      "title": "Communication Capstone",
-      "credits": 3,
-      "prereqs": ["COMM 3200", "COMM 3300"],
-      "description": "Senior capstone project in communication"
-    }
-  ],
-  
-  "requirements": {
-    "core_communication": {
-      "min_courses": 5,
-      "courses": ["COMM 1010", "COMM 2110", "COMM 3200", "COMM 3300", "COMM 4400"]
-    },
-    "general_education": {
-      "total_hours": 42,
-      "note": "Standard university general education requirements"
-    },
-    "electives": {
-      "total_hours": 33,
-      "note": "Free electives to reach 120 total hours"
+    "year4": {
+      "Fall": [
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3 },
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3 },
+        { "code": "COMM 4020", "title": "TELEVISION SPORTS SHOW PRODUCTION ††", "credits": 3, "prereqs": ["CMPS 4310"] },
+        { "code": "ELCT XXXX", "title": "Elective", "credits": 3 },
+        { "code": "NS XXXX", "title": "Natural Sciences (Gen Ed)", "credits": 3 }
+      ],
+      "Spring": [
+        { "code": "COMM 4980", "title": "PROFESSIONAL SEMINAR IN COMMUNICATION ††", "credits": 3 },
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3 },
+        { "code": "ELCT XXXX", "title": "Elective", "credits": 3 },
+        { "code": "NS XXXX", "title": "Natural Sciences (Gen Ed)", "credits": 3 },
+        { "code": "ENGL XXXX", "title": "FILM CRITICISM", "credits": 3 },
+        {
+          "choiceGroup": "English",
+          "title": "English Requirement",
+          "options": [
+            { "code": "ENGL 3740", "title": "LITERATURE AND FILM", "credits": 3 },
+            { "code": "ENGL 3800", "title": "CREATIVE WRITING: DRANA", "credits": 3 }
+          ]
+        }
+      ]
     }
   },
   
-  "note": "This is a basic catalog structure. More detailed course information and requirements need to be added."
+  "courses": [
+      { "code": "NATURAL SCIENCES", "title": "Gen Ed ", "credits": 3 },
+        { "code": "FL 1010", "title": "Foriegn Language", "credits": 3 },
+        { "code": "HUMN 1XXX/PHIL 1XXX", "title": "Humanities (History/Philosophy Gen Ed)", "credits": 3 },
+        { "code": "COMM 2560", "title": "INTRODUCTION TO AUDIO PRODUCTION ††", "credits": 3 },
+        { "code": "FYSE 1000", "title": "First Year Seminar", "credits": 2 },
+        { "code": "COMM 1510", "title": "WRITING FOR THE MASS MEDIA ††", "credits": 3 },
+        { "code": "COMM 2570", "title": "INTRODUCTION TO TELEVISION PRODUCTION ††", "credits": 3 },
+        { "code": "FL 1020", "title": "Foriegn Language", "credits": 3 },
+        { "code": "ENGL 1020", "title": "English Composition II (Gen Ed)", "credits": 3 },
+        { "code": "LS 1020", "title": "INTRODUCTION TO INFORMATION RESEARCH", "credits": 3 },
+        { "code": "COMM 2600", "title": "FIELD VIDEO PRODUCTION AND EDITING ††", "credits": 3, "prereqs": ["CMPS 2800"] },
+        { "code": "COMM 2110", "title": "INTRODUCTION TO PUBLIC SPEAKING ††(Gen Ed)", "credits": 3, "prereqs": ["CMPS 1610"] },
+        { "code": "FL 2010", "title": "Foriegn Language", "credits": 3, "prereqs": ["CMPS 2800"] },
+        { "code": "HUMANITIES LIT/LIT INTENSIVE", "title": "HUMANITIES LIT/LIT INTENSIVE (Gen Ed)", "credits": 3, "prereqs": ["CMPS 1610"] },
+        { "code": "MATH 1XXX", "title": "MATH/ANALYTICAL REASONING LIST (Gen Ed)", "credits": 3 },
+        { "code": "COMM 3280", "title": "SURVEY OF SPORTS COMMUNICATION ††", "credits": 3, "prereqs": ["CMPS 2940"] },
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3, "prereqs": ["CMPS 2800"] },
+        { "code": "FL 2020", "title": "Foriegn Language", "credits": 3, "prereqs": ["CMPS 2800", "CMPS 2570"] },
+        { "code": "MATH 2410", "title": "ELEMENTARY STATISTICS (Gen Ed)", "credits": 3, "prereqs": ["CMPS 2940"] },
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3 },
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3 },
+        { "code": "SOCIAL SCIENCE", "title": "Social Science (Gen Ed)", "credits": 3 },
+        { "code": "ELCT XXXX", "title": "Elective", "credits": 3 },
+        { "code": "ELCT XXXX", "title": "Elective", "credits": 3 },
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3 },
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3 },
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3 },
+        { "code": "SOCIAL SCIENCE", "title": "Social Science (Gen Ed)", "credits": 3 },
+        { "code": "FA XXXX", "title": "Fine Arts (Gen Ed)", "credits": 3 },
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3 },
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3 },
+        { "code": "COMM 4020", "title": "TELEVISION SPORTS SHOW PRODUCTION ††", "credits": 3, "prereqs": ["CMPS 4310"] },
+        { "code": "ELCT XXXX", "title": "Elective", "credits": 3 },
+        { "code": "NS XXXX", "title": "Natural Sciences (Gen Ed)", "credits": 3 },
+        { "code": "COMM 4980", "title": "PROFESSIONAL SEMINAR IN COMMUNICATION ††", "credits": 3 },
+        { "code": "COMM XXXX", "title": "COMM ELECTIVE ††", "credits": 3 },
+        { "code": "ELCT XXXX", "title": "Elective", "credits": 3 },
+        { "code": "NS XXXX", "title": "Natural Sciences (Gen Ed)", "credits": 3 },
+        { "code": "ENGL XXXX", "title": "FILM CRITICISM", "credits": 3 }
+  ]
 }
