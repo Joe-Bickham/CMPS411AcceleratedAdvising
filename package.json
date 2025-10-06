@@ -9,7 +9,9 @@
     "server:scrape": "npm --prefix server run scrape:it"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.65.0",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0"
   }
 }
