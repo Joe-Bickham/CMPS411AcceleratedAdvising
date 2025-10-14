@@ -238,3 +238,56 @@ Provide:
     throw new Error("Course recommendations temporarily unavailable");
   }
 }
+
+export async function analyzeCreditFulfillment(
+  actScores = null,
+  transferCredits = "",
+  dualEnrollmentCredits = "",
+  courseData = {},
+  degreeProgram = ""
+) {
+  const programName = degreeProgram || courseData?.program?.name || "this degree program";
+  
+  const system = `You are Claude, an AI academic advisor specializing in credit analysis and degree requirement fulfillment for ${programName} at Southeastern Louisiana University.
+
+PROGRAM INFORMATION:
+${JSON.stringify(courseData, null, 2)}
+
+Your task is to analyze student credentials and determine which degree requirements are already fulfilled.
+
+ANALYSIS GUIDELINES:
+- ACT scores can fulfill certain general education requirements or placement requirements
+- Transfer credits should be evaluated against specific course requirements
+- Dual enrollment credits should be treated similarly to transfer credits
+- Be specific about which requirements are met and which still need to be completed
+- If information is insufficient to make a determination, clearly state what additional information is needed
+
+Provide a detailed analysis in the following format:
+1. FULFILLED REQUIREMENTS: List specific requirements that are met
+2. REMAINING REQUIREMENTS: List what still needs to be completed
+3. RECOMMENDATIONS: Suggest next steps or additional information needed
+4. NOTES: Any important considerations or clarifications`;
+
+  const analysisPrompt = `Please analyze the following student credentials against the ${programName} degree requirements:
+
+STUDENT INFORMATION:
+- ACT Scores: ${actScores ?
+    Object.entries(actScores).map(([subject, score]) => `${subject}: ${score}`).join(', ') :
+    "Not provided"}
+- Transfer Credits: ${transferCredits || "None provided"}
+- Dual Enrollment Credits: ${dualEnrollmentCredits || "None provided"}
+
+Please provide a comprehensive analysis of which degree requirements are fulfilled by these credentials and what remains to be completed.`;
+
+  try {
+    return await callClaude({
+      system,
+      messages: [{ role: "user", content: analysisPrompt }],
+      max_tokens: 1200,
+      temperature: 0.2,
+    });
+  } catch (error) {
+    console.error("Claude credit analysis error:", error);
+    throw new Error("Credit analysis temporarily unavailable");
+  }
+}

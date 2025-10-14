@@ -12,7 +12,7 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
-import { getAcademicAdvice, generateDegreeTimeline, getCourseRecommendations } from './claude-service.js';
+import { getAcademicAdvice, generateDegreeTimeline, getCourseRecommendations, analyzeCreditFulfillment } from './claude-service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -222,6 +222,34 @@ app.post("/api/claude/degree-specific", async (req, res) => {
     res.status(500).json({
       error: 'Failed to get AI advice',
       fallback: 'Please try again later.'
+    });
+  }
+});
+
+// Credit Analysis endpoint
+app.post("/api/claude/credit-analysis", async (req, res) => {
+  try {
+    const { actScores, transferCredits, dualEnrollmentCredits, courseData, degreeProgram } = req.body;
+    
+    const analysis = await analyzeCreditFulfillment(
+      actScores,
+      transferCredits,
+      dualEnrollmentCredits,
+      courseData || {},
+      degreeProgram || ''
+    );
+    
+    res.json({
+      success: true,
+      analysis: analysis,
+      timestamp: new Date().toISOString(),
+      model: 'claude-3-5-sonnet'
+    });
+  } catch (error) {
+    console.error('Claude credit analysis error:', error);
+    res.status(500).json({
+      error: 'Failed to analyze credits',
+      fallback: 'Please try again later or contact an advisor.'
     });
   }
 });

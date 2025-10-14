@@ -56,8 +56,30 @@
     .side-section{padding:10px 12px;}
     .notes{background:#0a2e27; border:1px dashed rgba(255,255,255,.25); border-radius:10px; padding:10px 12px; margin:10px 12px; font-size:14px;}
     .small{opacity:.9; font-size:13px;}
-    .stack{display:flex; gap:8px; align-items:center;}    
+    .stack{display:flex; gap:8px; align-items:center;}
     select{background:#073a2f; color:var(--ink); border:1px solid rgba(255,255,255,.15); border-radius:8px; padding:6px 8px; font-weight:700;}
+    
+    /* Student Information Section Styles */
+    .student-info-section{background:#0a2e27; border:1px solid rgba(255,255,255,.15); border-radius:10px; padding:12px; margin:10px 12px; font-size:14px;}
+    .student-info-section h3{margin:0 0 12px; color:var(--gold); font-size:16px; font-weight:700;}
+    .form-group{margin-bottom:12px;}
+    .form-group label{display:block; margin-bottom:4px; font-weight:600; color:var(--ink); font-size:13px;}
+    .form-input{width:100%; background:#06241e; color:var(--ink); border:1px solid rgba(255,255,255,.12); border-radius:6px; padding:8px 10px; font-size:13px; outline:none;}
+    .form-input:focus{border-color:var(--emerald); box-shadow:0 0 0 2px rgba(12,138,99,.2);}
+    .form-textarea{min-height:60px; resize:vertical; font-family:inherit;}
+    .btn-secondary{background:#073a2f; color:var(--ink); border:1px solid rgba(255,255,255,.15); border-radius:8px; padding:8px 12px; font-weight:600; cursor:pointer; font-size:13px; margin-right:8px;}
+    .btn-secondary:hover{background:#0a4d3f; border-color:var(--emerald);}
+    .btn-download{background:var(--gold); color:#072b22; border:none; border-radius:8px; padding:8px 12px; font-weight:700; cursor:pointer; font-size:13px;}
+    .btn-download:hover{filter:brightness(1.1);}
+    .analysis-result{background:#0f3a31; border:1px solid rgba(255,255,255,.08); border-radius:8px; padding:10px; margin-top:10px; white-space:pre-wrap; font-size:13px; line-height:1.4; max-height:200px; overflow-y:auto;}
+    .button-group{display:flex; gap:8px; margin-top:12px;}
+    
+    @media (max-width:520px){
+      .student-info-section{ margin:10px 8px; padding:10px; }
+      .button-group{ flex-direction:column; }
+      .btn-secondary, .btn-download{ width:100%; margin-right:0; margin-bottom:8px; }
+      .analysis-result{ font-size:12px; max-height:150px; }
+    }
   </style>
 </head>
 <body>
@@ -79,21 +101,8 @@
         <!-- Chat / logic -->
         <section class="panel">
           <div class="head">
-            <span>Chat · Prereqs · Eligibility · Suggestions</span>
-            <div class="stack">
-              <label for="year" class="small">Year</label>
-              <select id="year">
-                <option value="Year1">Year 1</option>
-                <option value="Year2">Year 2</option>
-                <option value="Year3">Year 3</option>
-                <option value="Year4">Year 4</option>
-              </select>
-              <label for="term" class="small">Term</label>
-              <select id="term">
-                <option value="Fall">Fall</option>
-                <option value="Spring">Spring</option>
-              </select>
-            </div>
+            <span>Advisor Assistant</span>
+            <span style="font-size:11px; opacity:0.7; margin-left:8px;">powered by claude anthropic</span>
           </div>
           <div class="body">
             <div id="chat" class="chat-body"></div>
@@ -106,14 +115,8 @@
 
         <!-- Completed + actions -->
         <aside class="panel">
-          <div class="head">Completed Courses
-            <div class="stack">
-              <button id="suggest" class="btn">Suggest next courses</button>
-              <button id="timeline" class="btn">Create Timeline</button>
-            </div>
-          </div>
+          <div class="head">Degree Prerequisite Information</div>
           <div class="body">
-            <div id="chips" class="chips"></div>
             <div class="side-section">
               <div class="notes">
                 <div><strong>Program notes</strong></div>
@@ -123,6 +126,45 @@
                   <li>Science sequence with labs (BIOL, CHEM, or PHYS) + one additional science + lab.</li>
                 </ul>
                 <div class="small">COMM catalog is auto-fetched if backend is running; otherwise a local snapshot may be used.</div>
+              </div>
+              
+              <!-- Student Information Section -->
+              <div class="student-info-section">
+                <h3>Student Information</h3>
+                <div class="form-group">
+                  <label>ACT Scores</label>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px;">
+                    <div>
+                      <label for="act-english" style="font-size:12px; margin-bottom:2px;">English</label>
+                      <input type="number" id="act-english" class="form-input" placeholder="English" min="1" max="36" style="margin-bottom:4px;">
+                    </div>
+                    <div>
+                      <label for="act-reading" style="font-size:12px; margin-bottom:2px;">Reading</label>
+                      <input type="number" id="act-reading" class="form-input" placeholder="Reading" min="1" max="36" style="margin-bottom:4px;">
+                    </div>
+                    <div>
+                      <label for="act-math" style="font-size:12px; margin-bottom:2px;">Mathematics</label>
+                      <input type="number" id="act-math" class="form-input" placeholder="Math" min="1" max="36">
+                    </div>
+                    <div>
+                      <label for="act-science" style="font-size:12px; margin-bottom:2px;">Science</label>
+                      <input type="number" id="act-science" class="form-input" placeholder="Science" min="1" max="36">
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="transfer-credits">Transfer Credits</label>
+                  <textarea id="transfer-credits" class="form-input form-textarea" placeholder="List your transfer courses (e.g., ENGL 1010 - English Composition, COMM 1510 - Public Speaking)"></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="dual-enrollment">Dual Enrollment Credits</label>
+                  <textarea id="dual-enrollment" class="form-input form-textarea" placeholder="List your dual enrollment courses (e.g., HIST 1010 - World History, FL 1010 - Foreign Language)"></textarea>
+                </div>
+                <div class="button-group">
+                  <button id="analyze-credits" class="btn-secondary">Analyze Credits</button>
+                  <button id="download-info" class="btn-download">Download Info</button>
+                </div>
+                <div id="credit-analysis" class="analysis-result" style="display:none;"></div>
               </div>
             </div>
           </div>
@@ -391,17 +433,6 @@
       // events
       document.getElementById('send').addEventListener('click', submit);
       document.getElementById('input').addEventListener('keydown', e=>{ if(e.key==='Enter') submit(); });
-      suggestBtn.addEventListener('click', ()=>{
-        const nextKey = labelFor(yearSel.value, termSel.value);
-        renderChips();
-        renderResponse({type:'suggest', ...suggestNext(completed, nextKey)});
-      });
-      timelineBtn.addEventListener('click', async ()=>{
-        const response = await generateTimeline();
-        renderResponse(response);
-      });
-      yearSel.addEventListener('change', renderChips);
-      termSel.addEventListener('change', renderChips);
 
       // sign out + header info
       try{
@@ -439,10 +470,134 @@
       (async function init(){
         MODEL = await loadCatalog();
         COURSE_INDEX = byCode(MODEL.courses||[]);
-        renderChips();
-        addMsg('COMM advisor ready. Toggle completed courses (right), then ask about prerequisites, eligibility, or press "Suggest next courses".');
-        addMsg('Tip: set Year/Term first; suggestions will match that semester only.');
+        addMsg('Advisor Assistant ready. Ask me anything about the Communication program requirements, prerequisites, or course planning.');
+        addMsg('You can also use the Student Information section on the right to analyze your existing credits.');
       })();
+
+      // Student Information Feature
+      const actEnglishInput = document.getElementById('act-english');
+      const actReadingInput = document.getElementById('act-reading');
+      const actMathInput = document.getElementById('act-math');
+      const actScienceInput = document.getElementById('act-science');
+      const transferCreditsInput = document.getElementById('transfer-credits');
+      const dualEnrollmentInput = document.getElementById('dual-enrollment');
+      const analyzeBtn = document.getElementById('analyze-credits');
+      const downloadBtn = document.getElementById('download-info');
+      const analysisResult = document.getElementById('credit-analysis');
+
+      // Analyze Credits Function
+      async function analyzeCredits() {
+        const actEnglish = actEnglishInput.value.trim();
+        const actReading = actReadingInput.value.trim();
+        const actMath = actMathInput.value.trim();
+        const actScience = actScienceInput.value.trim();
+        const transferCredits = transferCreditsInput.value.trim();
+        const dualEnrollment = dualEnrollmentInput.value.trim();
+
+        const hasActScores = actEnglish || actReading || actMath || actScience;
+        if (!hasActScores && !transferCredits && !dualEnrollment) {
+          analysisResult.style.display = 'block';
+          analysisResult.textContent = 'Please enter any available student information to analyze. All fields are optional - provide only what you have.';
+          return;
+        }
+
+        // Build ACT scores object
+        const actScores = {};
+        if (actEnglish) actScores.english = actEnglish;
+        if (actReading) actScores.reading = actReading;
+        if (actMath) actScores.mathematics = actMath;
+        if (actScience) actScores.science = actScience;
+
+        try {
+          analysisResult.style.display = 'block';
+          analysisResult.textContent = '🤖 Analyzing your credits against degree requirements...';
+
+          const response = await fetch('http://localhost:4000/api/claude/credit-analysis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              actScores: Object.keys(actScores).length > 0 ? actScores : null,
+              transferCredits: transferCredits || '',
+              dualEnrollmentCredits: dualEnrollment || '',
+              courseData: MODEL,
+              degreeProgram: DEGREE_PROGRAM
+            })
+          });
+
+          const data = await response.json();
+          if (data.success) {
+            analysisResult.textContent = `🤖 Credit Analysis Results:\n\n${data.analysis}`;
+          } else {
+            throw new Error(data.error || 'Analysis failed');
+          }
+        } catch (error) {
+          console.error('Credit analysis error:', error);
+          analysisResult.textContent = 'Credit analysis temporarily unavailable. Please try again later.';
+        }
+      }
+
+      // Download Student Information Function
+      function downloadStudentInfo() {
+        const actScore = actScoreInput.value.trim();
+        const transferCredits = transferCreditsInput.value.trim();
+        const dualEnrollment = dualEnrollmentInput.value.trim();
+        const analysisText = analysisResult.style.display !== 'none' ? analysisResult.textContent : '';
+
+        let content = '';
+        
+        if (!actScore && !transferCredits && !dualEnrollment) {
+          content = 'No student information provided';
+        } else {
+          content = 'STUDENT INFORMATION - Communication, BA (Sports Communication)\n';
+          content += '='.repeat(60) + '\n\n';
+          content += `Generated: ${new Date().toLocaleString()}\n\n`;
+          
+          if (actScore) {
+            content += `ACT Score: ${actScore}\n\n`;
+          }
+          
+          if (transferCredits) {
+            content += `Transfer Credits:\n${transferCredits}\n\n`;
+          }
+          
+          if (dualEnrollment) {
+            content += `Dual Enrollment Credits:\n${dualEnrollment}\n\n`;
+          }
+          
+          if (analysisText && !analysisText.includes('unavailable')) {
+            content += `AI ANALYSIS:\n${analysisText}\n\n`;
+          }
+        }
+
+        // Create and download file with improved Chrome compatibility
+        try {
+          const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `student-info-comm-ba-${new Date().toISOString().split('T')[0]}.txt`;
+          a.style.display = 'none';
+          document.body.appendChild(a);
+          
+          // Force click and cleanup
+          setTimeout(() => {
+            a.click();
+            setTimeout(() => {
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            }, 100);
+          }, 10);
+          
+          console.log('Download initiated for:', a.download);
+        } catch (error) {
+          console.error('Download failed:', error);
+          alert('Download failed. Please try again.');
+        }
+      }
+
+      // Event Listeners
+      analyzeBtn.addEventListener('click', analyzeCredits);
+      downloadBtn.addEventListener('click', downloadStudentInfo);
     })();
   </script>
 </body>
