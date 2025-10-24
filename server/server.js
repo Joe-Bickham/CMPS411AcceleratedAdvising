@@ -25,6 +25,7 @@ app.use(express.json());
 const DATA_DIR = path.join(__dirname, "data");
 const IT_FILE = path.join(DATA_DIR, "it-bs-catalog.json");
 const CORE_FILE = path.join(DATA_DIR, "core-gened.json");
+const CJ_FILE = path.join(DATA_DIR, "cj-bs-catalog.json");
 
 // helper to read JSON
 function readJson(p) {
@@ -85,7 +86,7 @@ app.get("/api/catalog/comm-bs", (req, res) => {
     const COMM_FILE = path.join(DATA_DIR, "comm-bs-catalog.json");
     const raw = readJson(COMM_FILE);
     const { program, courses } = raw;
-    
+
     res.json({
       program: program || {},
       courses: courses || [],
@@ -94,6 +95,24 @@ app.get("/api/catalog/comm-bs", (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Failed to load Communication catalog" });
+  }
+});
+
+// GET Criminal Justice catalog
+app.get("/api/catalog/cj-bs", (req, res) => {
+  try {
+    const raw = readJson(CJ_FILE);
+    const { program, courses, groups } = raw;
+
+    res.json({
+      program: program || {},
+      courses: courses || [],
+      groups: groups || [],
+      mode: "snapshot",
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Failed to load Criminal Justice catalog" });
   }
 });
 
@@ -203,6 +222,9 @@ app.post("/api/claude/degree-specific", async (req, res) => {
       } else if (programKey === 'comm-bs-2024-25') {
         const commData = readJson(path.join(DATA_DIR, "comm-bs-catalog.json"));
         catalogData = commData;
+      } else if (programKey === 'cj-bs-2024-25') {
+        const cjData = readJson(path.join(DATA_DIR, "cj-bs-catalog.json"));
+        catalogData = cjData;
       }
     } catch (catalogError) {
       console.log('Catalog not found, proceeding with limited data');

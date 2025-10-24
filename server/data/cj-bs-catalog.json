@@ -1,0 +1,155 @@
+{
+  "program": {
+    "key": "cj-ba-2024-25",
+    "name": "Criminal Justice, BA",
+    "catalog_year": "2024-2025",
+    "total_hours": 120,
+    "min_grade_major": "C",
+    "notes": [
+      "G = General Education Requirement (GER). Honors equivalents are acceptable for all GER courses.",
+      "†† Indicates courses required in the major; a grade of C or higher is required.",
+      "Six hours in one foreign language.",
+      "CJ 2010, CJ 2020, CJ 2040, and CJ 2050 may be taken in any sequence."
+    ],
+    "rules": [
+      {
+        "type": "science_sequence",
+        "note": "Complete a two-course Natural Sciences GER sequence. If the two-course sequence is taken in the physical sciences, the additional 3-hour science must be from the life sciences, and vice versa."
+      },
+      {
+        "type": "foreign_language",
+        "hours": 6,
+        "note": "Six hours in one foreign language."
+      },
+      {
+        "type": "major_grade_minimum",
+        "courses": "all_cj_required",
+        "min_grade": "C",
+        "note": "All †† CJ courses require a C or higher."
+      }
+    ]
+  },
+  "plan": {
+    "year1": {
+      "Fall": [
+        { "code": "CJ 1010", "title": "INTRODUCTION TO CRIMINAL JUSTICE", "credits": 3, "major_required": true },
+        { "code": "ENGL-COMP-GER", "title": "ENGL COMPOSITION (GER)", "credits": 3 },
+        { "code": "FA-GER", "title": "FINE ARTS (GER)", "credits": 3 },
+        { "code": "HIST/PHIL-GER", "title": "HUMANITIES HIST/PHIL (GER)", "credits": 3 },
+        { "code": "LS 1020", "title": "INTRODUCTION TO INFORMATION RESEARCH", "credits": 1 },
+        { "code": "SE 101", "title": "FIRST YEAR SEMINAR", "credits": 2 }
+      ],
+      "Spring": [
+        { "code": "CJ 2010", "title": "CRIMINAL LAW", "credits": 3, "major_required": true },
+        { "code": "MATH/AR-GER", "title": "MATH from MATH/ANALYTICAL REASONING LIST (GER)", "credits": 3 },
+        { "code": "ENGL-COMP-GER", "title": "ENGL COMPOSITION (GER)", "credits": 3 },
+        { "code": "SOC 1010", "title": "INTRODUCTORY SOCIOLOGY", "credits": 3 },
+        { "code": "FL 1", "title": "FOREIGN LANGUAGE I", "credits": 3 }
+      ]
+    },
+    "year2": {
+      "Fall": [
+        { "code": "CJ 2020", "title": "AMERICAN JUDICIAL PROCESS", "credits": 3, "major_required": true },
+        { "code": "PSYC 1010", "title": "GENERAL PSYCHOLOGY I", "credits": 3 },
+        { "code": "FL 2", "title": "FOREIGN LANGUAGE II (same language as FL 1)", "credits": 3 },
+        { "code": "MATH/AR-GER", "title": "MATH/ANALYTICAL REASONING (GER)", "credits": 3 },
+        { "code": "HUM-LIT-GER", "title": "HUMANITIES LIT/LIT INTENSIVE (GER)", "credits": 3 }
+      ],
+      "Spring": [
+        { "code": "CJ 2040", "title": "CONTEMPORARY LAW ENFORCEMENT", "credits": 3, "major_required": true },
+        { "code": "CJ 2050", "title": "THE CORRECTIONS PROCESS", "credits": 3, "major_required": true },
+        { "code": "NS-GER", "title": "NATURAL SCIENCES (GER) — part of sequence", "credits": 3 },
+        { "code": "SS-GER", "title": "SOCIAL SCIENCE (GER) — not Criminal Justice", "credits": 3 },
+        { "one_of": [
+            { "code": "POLI 2010", "title": "AMERICAN POLITICS", "credits": 3 },
+            { "code": "POLI 2020", "title": "STATE AND LOCAL POLITICS", "credits": 3 }
+          ],
+          "choice_label": "Choose one POLI option"
+        }
+      ]
+    },
+    "year3": {
+      "Fall": [
+        { "code": "SOC 3050", "title": "DATA ANALYSIS & STATISTICS FOR THE SOCIAL SCIENCES", "credits": 3 },
+        { "code": "CJ 2960", "title": "DEVIANCE AND SOCIAL CONTROL", "credits": 3, "major_required": true },
+        { "code": "CJ ELECT", "title": "CJ ELECTIVE", "credits": 3 },
+        { "code": "NS-GER", "title": "NATURAL SCIENCES (GER) — complete sequence", "credits": 3 },
+        { "code": "COMM/LANG-GER", "title": "ANY COMM from COMM/LANG (GER)", "credits": 3 }
+      ],
+      "Spring": [
+        { "code": "CJ ELECT", "title": "CJ ELECTIVE", "credits": 3 },
+        { "code": "CJ ELECT", "title": "CJ ELECTIVE", "credits": 3 },
+        { "code": "CJ ELECT", "title": "CJ ELECTIVE", "credits": 3 },
+        { "code": "SOC 3100", "title": "METHODS OF SOCIAL RESEARCH", "credits": 3 },
+        { "code": "NS-GER", "title": "NATURAL SCIENCES (GER) — third science (opposite area)", "credits": 3 }
+      ]
+    },
+    "year4": {
+      "Fall": [
+        { "code": "CJ ELECT", "title": "CJ ELECTIVE", "credits": 3 },
+        { "code": "CJ ELECT", "title": "CJ ELECTIVE", "credits": 3 },
+        { "code": "GEOG 3220", "title": "GEOGRAPHY OF LOUISIANA", "credits": 3 },
+        { "code": "ELECTIVE", "title": "UNIVERSITY ELECTIVE", "credits": 3 },
+        { "code": "ELECTIVE", "title": "UNIVERSITY ELECTIVE", "credits": 3 }
+      ],
+      "Spring": [
+        { "code": "CJ ELECT", "title": "CJ ELECTIVE", "credits": 3 },
+        { "code": "SS-GER", "title": "SOCIAL SCIENCE ELECTIVE (GER) — not Criminal Justice", "credits": 3 },
+        { "code": "ELECTIVE", "title": "UNIVERSITY ELECTIVE", "credits": 3 },
+        {
+          "one_of": [
+            { "code": "CJ 4120", "title": "CRIMINOLOGY", "credits": 3, "major_required": true },
+            { "code": "SOC 4120", "title": "CRIMINOLOGY", "credits": 3 }
+          ],
+          "choice_label": "Choose CJ 4120 or SOC 4120"
+        },
+        {
+          "one_of": [
+            { "code": "SOC 4110", "title": "RACE AND ETHNIC RELATIONS", "credits": 3 },
+            { "code": "ANTH 4110", "title": "RACE AND ETHNIC RELATIONS", "credits": 3 }
+          ],
+          "choice_label": "Choose SOC 4110 or ANTH 4110"
+        }
+      ]
+    }
+  },
+  "courses": [
+    { "code": "CJ 1010", "title": "INTRODUCTION TO CRIMINAL JUSTICE", "credits": 3, "major_required": true },
+    { "code": "CJ 2010", "title": "CRIMINAL LAW", "credits": 3, "major_required": true },
+    { "code": "CJ 2020", "title": "AMERICAN JUDICIAL PROCESS", "credits": 3, "major_required": true },
+    { "code": "CJ 2040", "title": "CONTEMPORARY LAW ENFORCEMENT", "credits": 3, "major_required": true },
+    { "code": "CJ 2050", "title": "THE CORRECTIONS PROCESS", "credits": 3, "major_required": true },
+    { "code": "CJ 2960", "title": "DEVIANCE AND SOCIAL CONTROL", "credits": 3, "major_required": true },
+    { "code": "CJ 4120", "title": "CRIMINOLOGY", "credits": 3 },
+    { "code": "SOC 4120", "title": "CRIMINOLOGY", "credits": 3 },
+    { "code": "SOC 4110", "title": "RACE AND ETHNIC RELATIONS", "credits": 3 },
+    { "code": "ANTH 4110", "title": "RACE AND ETHNIC RELATIONS", "credits": 3 },
+    { "code": "SOC 3050", "title": "DATA ANALYSIS AND STATISTICS FOR THE SOCIAL SCIENCES", "credits": 3 },
+    { "code": "SOC 3100", "title": "METHODS OF SOCIAL RESEARCH", "credits": 3 },
+    { "code": "POLI 2010", "title": "AMERICAN POLITICS", "credits": 3 },
+    { "code": "POLI 2020", "title": "STATE AND LOCAL POLITICS", "credits": 3 },
+    { "code": "PSYC 1010", "title": "GENERAL PSYCHOLOGY I", "credits": 3 },
+    { "code": "GEOG 3220", "title": "GEOGRAPHY OF LOUISIANA", "credits": 3 },
+    { "code": "LS 1020", "title": "INTRODUCTION TO INFORMATION RESEARCH", "credits": 1 },
+    { "code": "SE 101", "title": "FIRST YEAR SEMINAR", "credits": 2 },
+    { "code": "CJ ELECT", "title": "CJ ELECTIVE", "credits": 3 },
+    { "code": "ENGL-COMP-GER", "title": "ENGL COMPOSITION (GER)", "credits": 3 },
+    { "code": "FA-GER", "title": "FINE ARTS (GER)", "credits": 3 },
+    { "code": "HIST/PHIL-GER", "title": "HUMANITIES HIST/PHIL (GER)", "credits": 3 },
+    { "code": "HUM-LIT-GER", "title": "HUMANITIES LIT/LIT INTENSIVE (GER)", "credits": 3 },
+    { "code": "MATH/AR-GER", "title": "MATH/ANALYTICAL REASONING (GER)", "credits": 3 },
+    { "code": "NS-GER", "title": "NATURAL SCIENCES (GER)", "credits": 3 },
+    { "code": "SS-GER", "title": "SOCIAL SCIENCE (GER) — not Criminal Justice", "credits": 3 },
+    { "code": "COMM/LANG-GER", "title": "COMM from COMM/LANG (GER)", "credits": 3 },
+    { "code": "FL 1", "title": "FOREIGN LANGUAGE I", "credits": 3 },
+    { "code": "FL 2", "title": "FOREIGN LANGUAGE II", "credits": 3 },
+    { "code": "ELECTIVE", "title": "UNIVERSITY ELECTIVE", "credits": 3 }
+  ],
+  "groups": [
+    {
+      "label": "Upper-level CJ Electives",
+      "rule": { "min_courses": 7, "note": "Total of seven 3-hour CJ electives across junior/senior years." },
+      "from": ["CJ ELECT"]
+    }
+  ]
+}
