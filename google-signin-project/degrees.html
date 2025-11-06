@@ -3,8 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Select Degree – Accelerated Advising</title>
+  <title>Select Degree - Accelerated Advising</title>
   <link rel="stylesheet" href="ui-shared.css"/>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    const supabase = createClient('https://cpkuxbounjvdaptzurmq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwa3V4Ym91bmp2ZGFwdHp1cm1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NTAzNjMsImV4cCI6MjA3ODAyNjM2M30.SDH0n2T5-3LATftVndaeS_4PG6kBHVwOYVqXD55hzv8');
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) window.location.href = 'index.html';
+    window.SUPABASE = supabase;
+  </script>
   <style>
     :root { --green:#006747; --emerald:#0c8a63; --gold:#fdb913;
       --ink:#eaf8f5; --muted:rgba(255,255,255,.85);
@@ -188,8 +195,9 @@
       go(DEPT_PAGE);
     });
 
-    // Sign out and return to index
-    document.getElementById('signout').addEventListener('click', ()=>{
+    // Sign out via Supabase
+    document.getElementById('signout').addEventListener('click', async ()=>{
+      try{ await (window.SUPABASE?.auth.signOut()); }catch{}
       try{
         localStorage.removeItem('aa_user');
         localStorage.removeItem('aa_program');

@@ -5,48 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Sign In</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <div class="container">
         <div class="signin-card">
             <h1>Welcome</h1>
             <p>Please sign in with your Google account to continue</p>
-            
-            <div id="g_id_onload"
-                 data-client_id="YOUR_GOOGLE_CLIENT_ID"
-                 data-context="signin"
-                 data-ux_mode="popup"
-                 data-callback="handleCredentialResponse"
-                 data-auto_prompt="false">
-            </div>
-            
-            <div class="g_id_signin"
-                 data-type="standard"
-                 data-shape="rectangular"
-                 data-theme="outline"
-                 data-text="signin_with"
-                 data-size="large"
-                 data-logo_alignment="left">
-            </div>
-            
             <div class="manual-signin">
-                <button id="manual-signin-btn" onclick="signInManually()">Sign In with Google</button>
+                <button id="supabase-google-btn">Continue with Google</button>
             </div>
-            
-            <div class="info">
-                <p><strong>Note:</strong> To use Google Sign-In, you'll need to:</p>
-                <ol>
-                    <li>Create a Google Cloud Project</li>
-                    <li>Enable the Google+ API</li>
-                    <li>Create OAuth 2.0 credentials</li>
-                    <li>Replace "YOUR_GOOGLE_CLIENT_ID" with your actual client ID</li>
-                </ol>
-                <p>For demo purposes, click the manual sign-in button below.</p>
+            <div class="info" style="margin-top:12px;">
+                <p>Secure login via Supabase Auth (Google). After signing in you will be redirected to department selection.</p>
             </div>
         </div>
     </div>
     
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
