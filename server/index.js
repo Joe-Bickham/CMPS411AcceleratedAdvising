@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { PROGRAMS } from "./config.js";
-import { resolveLatestCatalogUrl } from "./resolver.js";
+import { resolveLatestCatalogUrl, discoverLatestProgramUrl } from "./resolver.js";
 import { scrapeCatalogFromUrl } from "./scraper.js";
 import { getCache, setCache } from "./cache.js";
 
@@ -24,6 +24,26 @@ app.get("/api/catalog/:programKey", async (req, res) => {
     if (cached) return res.json(cached);
 
     const url = await resolveLatestCatalogUrl(programKey);
+    const model = await scrapeCatalogFromUrl(url);
+    setCache(cacheKey, model, 6 * 60 * 60 * 1000);
+    res.json(model);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: String(err?.message || err) });
+  }
+});
+
+// New: discover via Southeastern landing → current catalog → A–Z → program
+app.get("/api/catalog/:programKey/latest", async (req, res) => {
+  try {
+    const { programKey } = req.params;
+    if (!PROGRAMS[programKey]) return res.status(404).json({ error: "Unknown program key" });
+
+    const cacheKey = `modelLatest:${programKey}`;
+    const cached = getCache(cacheKey);
+    if (cached) return res.json(cached);
+
+    const url = await discoverLatestProgramUrl(programKey);
     const model = await scrapeCatalogFromUrl(url);
     setCache(cacheKey, model, 6 * 60 * 60 * 1000);
     res.json(model);

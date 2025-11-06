@@ -3,7 +3,28 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Advising — Information Technology, BS</title>
+  <title>Advising - Information Technology, BS</title>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    const supabase = createClient('https://cpkuxbounjvdaptzurmq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwa3V4Ym91bmp2ZGFwdHp1cm1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NTAzNjMsImV4cCI6MjA3ODAyNjM2M30.SDH0n2T5-3LATftVndaeS_4PG6kBHVwOYVqXD55hzv8');
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = 'index.html';
+    } else {
+      // decorate header
+      const { data: { user } } = await supabase.auth.getUser();
+      document.addEventListener('DOMContentLoaded', () => {
+        const info = document.getElementById('user-info');
+        if (info && user) info.textContent = user.email || 'Signed in';
+        const btn = document.getElementById('signout');
+        if (btn) btn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          await supabase.auth.signOut();
+          window.location.href = 'index.html';
+        }, { once:true });
+      });
+    }
+  </script>
 
   <!-- ✅ App icon / favicon -->
   <link rel="icon" type="image/svg+xml" href="./assets/kaizenexus_logo.svg">
@@ -241,7 +262,7 @@
 
     async function loadCatalog() {
       try {
-        const r = await fetch('http://localhost:4000/api/catalog/it-bs', {mode:'cors'});
+        const r = await fetch('http://localhost:4000/api/catalog/it-bs/latest', {mode:'cors'});
         if (!r.ok) throw new Error('not ok');
         const data = await r.json();
         return data;
@@ -613,3 +634,4 @@
   </script>
 </body>
 </html>
+

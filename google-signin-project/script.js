@@ -1,68 +1,35 @@
-// Handle Google Sign-In response
-function handleCredentialResponse(response) {
-    console.log("Encoded JWT ID token: " + response.credential);
-    
-    // Decode the JWT token to get user information
-    const responsePayload = decodeJwtResponse(response.credential);
-    
-    console.log("ID: " + responsePayload.sub);
-    console.log('Full Name: ' + responsePayload.name);
-    console.log('Given Name: ' + responsePayload.given_name);
-    console.log('Family Name: ' + responsePayload.family_name);
-    console.log("Image URL: " + responsePayload.picture);
-    console.log("Email: " + responsePayload.email);
-    
-    // Store user info in sessionStorage for the placeholder page
-    sessionStorage.setItem('userInfo', JSON.stringify({
-        name: responsePayload.name,
-        email: responsePayload.email,
-        picture: responsePayload.picture
-    }));
-    
-    // Redirect to department selection page
-    window.location.href = 'department-selection.html';
+// Supabase OAuth-only login (Google)
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const SUPABASE_URL = 'https://cpkuxbounjvdaptzurmq.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwa3V4Ym91bmp2ZGFwdHp1cm1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NTAzNjMsImV4cCI6MjA3ODAyNjM2M30.SDH0n2T5-3LATftVndaeS_4PG6kBHVwOYVqXD55hzv8';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function signInWithGoogle() {
+  console.log('[auth] signInWithGoogle clicked');
+  const redirectTo = window.location.origin + '/google-signin-project/department-selection.html';
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo, skipBrowserRedirect: true }
+  });
+  if (error) {
+    console.error('[auth] signIn error', error);
+    alert('Sign-in error: ' + (error?.message || error));
+    return;
+  }
+  if (data?.url) {
+    console.log('[auth] redirecting to', data.url);
+    window.location.href = data.url;
+  } else {
+    console.warn('[auth] no redirect url returned');
+  }
 }
 
-// Decode JWT token
-function decodeJwtResponse(token) {
-    var base64Url = token.split('.')[1];
-    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    return JSON.parse(jsonPayload);
-}
-
-// Manual sign-in function for demo purposes
-function signInManually() {
-    // Simulate a successful sign-in for demo
-    const demoUser = {
-        name: "Demo User",
-        email: "demo@example.com",
-        picture: "https://via.placeholder.com/150"
-    };
-    
-    // Store demo user info
-    sessionStorage.setItem('userInfo', JSON.stringify(demoUser));
-    
-    // Show a brief loading message
-    const button = document.getElementById('manual-signin-btn');
-    const originalText = button.textContent;
-    button.textContent = 'Signing in...';
-    button.disabled = true;
-    
-    // Redirect after a short delay
-    setTimeout(() => {
-        window.location.href = 'department-selection.html';
-    }, 1000);
-}
-
-// Initialize Google Sign-In when the page loads
-window.onload = function() {
-    // Check if user is already signed in
-    const userInfo = sessionStorage.getItem('userInfo');
-    if (userInfo) {
-        // User is already signed in, redirect to department selection
-        window.location.href = 'department-selection.html';
-    }
-};
+document.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('supabase-google-btn')?.addEventListener('click', signInWithGoogle);
+  // expose for debugging if needed
+  window.signInWithGoogle = signInWithGoogle;
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) window.location.href = 'department-selection.html';
+});

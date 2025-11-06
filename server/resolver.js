@@ -62,3 +62,58 @@ async function fetchHTML(url) {
   });
   return res.data;
 }
+
+// New: Discover latest catalog via Southeastern landing, then find A–Z and program link
+export async function discoverLatestProgramUrl(programKey, landingUrl = "https://www.southeastern.edu/catalog/") {
+  const cacheKey = `discover:${programKey}`;
+  const cached = getCache(cacheKey);
+  if (cached) return cached;
+
+  const program = PROGRAMS[programKey];
+  if (!program) throw new Error(`Unknown program key: ${programKey}`);
+  const progName = (program.name || "").trim();
+  if (!progName) throw new Error(`Program ${programKey} missing 'name' in config.js`);
+
+  // 1) Collect catoid candidates from landing pages
+  const landingCandidates = [landingUrl, "https://catalog.southeastern.edu/"];
+  const catoids = new Set();
+  for (const u of landingCandidates) {
+    try {
+      const html = await fetchHTML(u);
+      const $ = cheerio.load(html);
+      $('a[href*="catoid="]').each((_, a) => {
+        const href = String($(a).attr('href') || '');
+        const m = href.match(/catoid=(\d+)/);
+        if (m) catoids.add(Number(m[1]));
+      });
+    } catch {}
+  }
+  // Fallback to a reasonable range if nothing found
+  if (catoids.size === 0) [8,7,6,5].forEach(n => catoids.add(n));
+  const cids = Array.from(catoids).sort((a,b)=>b-a);
+
+  // 2) For each catoid, try to find the Programs of Study A–Z index and the program link
+  for (const cid of cids) {
+    const indexUrl = `https://catalog.southeastern.edu/content.php?catoid=${cid}&navoid=155`;
+    try {
+      const html = await fetchHTML(indexUrl);
+      const $ = cheerio.load(html);
+      // Find an anchor whose text matches the exact program name
+      let progHref = null;
+      $('a[href*="preview_program.php"]').each((_, a) => {
+        const text = String($(a).text() || '').trim();
+        if (text.toLowerCase() === progName.toLowerCase()) {
+          progHref = $(a).attr('href');
+          return false;
+        }
+      });
+      if (progHref) {
+        const abs = progHref.startsWith('http') ? progHref : `https://catalog.southeastern.edu/${progHref.replace(/^\//,'')}`;
+        return setCache(cacheKey, abs, 12 * 60 * 60 * 1000);
+      }
+    } catch {}
+  }
+
+  // If not found, fall back to the prior resolver method
+  return resolveLatestCatalogUrl(programKey);
+}
