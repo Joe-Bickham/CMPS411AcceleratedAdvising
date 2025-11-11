@@ -6,11 +6,21 @@
   <title>Advising - Communication, BA (Sports Communication)</title>
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-    const supabase = createClient('https://cpkuxbounjvdaptzurmq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwa3V4Ym91bmp2ZGFwdHp1cm1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NTAzNjMsImV4cCI6MjA3ODAyNjM2M30.SDH0n2T5-3LATftVndaeS_4PG6kBHVwOYVqXD55hzv8');
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      window.location.href = 'index.html';
-    } else {
+    import { requireSession } from './auth.js';
+    const supabase = createClient(
+      'https://cpkuxbounjvdaptzurmq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwa3V4Ym91bmp2ZGFwdHp1cm1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NTAzNjMsImV4cCI6MjA3ODAyNjM2M30.SDH0n2T5-3LATftVndaeS_4PG6kBHVwOYVqXD55hzv8',
+      {
+        auth: {
+          storage: window.sessionStorage,
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+        },
+      }
+    );
+    try {
+      await requireSession(supabase, 'index.html', 7000);
       const { data: { user } } = await supabase.auth.getUser();
       document.addEventListener('DOMContentLoaded', () => {
         const info = document.getElementById('user-info');
@@ -22,7 +32,7 @@
           window.location.href = 'index.html';
         }, { once:true });
       });
-    }
+    } catch {}
   </script>
   <style>
     :root{
@@ -224,7 +234,8 @@
     async function loadCatalog() {
       try {
         // Adjust this endpoint to your backend route
-        const r = await fetch('http://localhost:4000/api/catalog/comm-bs', {mode:'cors'});
+        // Use same-origin API when served by the backend; works on any port
+        const r = await fetch('/api/catalog/comm-bs', {mode:'cors'});
         if (!r.ok) throw new Error('not ok');
         const data = await r.json(); // { program, courses, groups }
         return data;
@@ -339,7 +350,7 @@
       async function queryClaudeAI(question) {
         try {
           addMsg('🤖 Claude is analyzing your question...', false);
-          const response = await fetch('http://localhost:4000/api/claude/advice', {
+          const response = await fetch('/api/claude/advice', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ question, courseData: MODEL, completedCourses: Array.from(completed), degreeProgram: DEGREE_PROGRAM, programKey: PROGRAM_KEY })
           });
@@ -355,7 +366,7 @@
       async function generateTimeline() {
         try {
           addMsg('🤖 Claude is creating your degree timeline...', false);
-          const response = await fetch('http://localhost:4000/api/claude/timeline', {
+          const response = await fetch('/api/claude/timeline', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ completedCourses: Array.from(completed), courseData: MODEL, startingSemester: termSel.value, targetGraduation: null })
           });
@@ -371,7 +382,7 @@
       async function getRecommendations() {
         try {
           addMsg('🤖 Claude is analyzing your progress for recommendations...', false);
-          const response = await fetch('http://localhost:4000/api/claude/recommendations', {
+          const response = await fetch('/api/claude/recommendations', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ completedCourses: Array.from(completed), courseData: MODEL, currentSemester: termSel.value })
           });
@@ -472,7 +483,7 @@
           localStorage.removeItem('aa_program');
           localStorage.removeItem('aa_department');
         }catch{}
-        window.location.assign('../index.html');
+        window.location.assign('index.html');
       });
       try{
         const k = localStorage.getItem('aa_program');
@@ -484,9 +495,7 @@
       // Department gate for COMM
       const selectedDept = localStorage.getItem('aa_department');
       if (selectedDept !== 'communication-media') {
-        const IN_SUBFOLDER = window.location.pathname.replace(/\\/g,'/').includes('/google-signin-project/');
-        const DEPT_PAGE = IN_SUBFOLDER ? 'department-selection.html' : 'google-signin-project/department-selection.html';
-        window.location.assign(DEPT_PAGE);
+        window.location.assign('department-selection.html');
         return;
       }
 
@@ -536,7 +545,7 @@
           analysisResult.style.display = 'block';
           analysisResult.textContent = '🤖 Analyzing your credits against degree requirements...';
 
-          const response = await fetch('http://localhost:4000/api/claude/credit-analysis', {
+          const response = await fetch('/api/claude/credit-analysis', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

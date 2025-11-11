@@ -21,6 +21,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serve static frontend (google-signin-project) from the same server/port
+const FRONT_DIR = path.join(__dirname, "../google-signin-project");
+app.use(express.static(FRONT_DIR));
+
 // local data
 const DATA_DIR = path.join(__dirname, "data");
 const IT_FILE = path.join(DATA_DIR, "it-bs-catalog.json");

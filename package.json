@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server/server.js",
     "server:start": "npm --prefix server start",
-    "server:scrape": "npm --prefix server run scrape:it"
+    "server:scrape": "npm --prefix server run scrape:it",
+    "open": "start http://localhost:4000"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.65.0",

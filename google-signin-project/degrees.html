@@ -7,9 +7,20 @@
   <link rel="stylesheet" href="ui-shared.css"/>
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-    const supabase = createClient('https://cpkuxbounjvdaptzurmq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwa3V4Ym91bmp2ZGFwdHp1cm1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NTAzNjMsImV4cCI6MjA3ODAyNjM2M30.SDH0n2T5-3LATftVndaeS_4PG6kBHVwOYVqXD55hzv8');
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) window.location.href = 'index.html';
+    import { requireSession } from './auth.js';
+    const supabase = createClient(
+      'https://cpkuxbounjvdaptzurmq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwa3V4Ym91bmp2ZGFwdHp1cm1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NTAzNjMsImV4cCI6MjA3ODAyNjM2M30.SDH0n2T5-3LATftVndaeS_4PG6kBHVwOYVqXD55hzv8',
+      {
+        auth: {
+          storage: window.sessionStorage,
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+        },
+      }
+    );
+    await requireSession(supabase, 'index.html', 7000);
     window.SUPABASE = supabase;
   </script>
   <style>
@@ -91,11 +102,10 @@
       }
     } catch {}
 
-    // Are we already inside /google-signin-project/? If yes, don't repeat the folder.
-    const IN_SUBFOLDER = window.location.pathname.replace(/\\/g,'/').includes('/google-signin-project/');
-    const CHAT_PAGE = IN_SUBFOLDER ? 'it_bs_chat.html' : 'google-signin-project/it_bs_chat.html';
-    const DEPT_PAGE = IN_SUBFOLDER ? 'department-selection.html' : 'google-signin-project/department-selection.html';
-    const COMM_PAGE = IN_SUBFOLDER ? 'comm_bs_chat.html' : 'google-signin-project/comm_bs_chat.html';
+    // Use relative paths within the same folder for simpler, robust routing
+    const CHAT_PAGE = 'it_bs_chat.html';
+    const DEPT_PAGE = 'department-selection.html';
+    const COMM_PAGE = 'comm_bs_chat.html';
 
     function go(relPath){
       const url = new URL(relPath, window.location.href).toString();
@@ -193,6 +203,8 @@
       });
     }
 
+    // Normalize back button label (in case of stray escape chars)
+    try { document.getElementById('back-btn').textContent = '← Back to Department Selection'; } catch {}
     // Back button functionality
     document.getElementById('back-btn').addEventListener('click', () => {
       go(DEPT_PAGE);

@@ -9,14 +9,20 @@ body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
+    flex-direction: column;
+    padding: 24px 20px;
 }
 
 .container {
     width: 100%;
     max-width: 400px;
+}
+
+.main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .signin-card {
@@ -50,7 +56,8 @@ p {
     margin: 20px 0;
 }
 
-#manual-signin-btn {
+#manual-signin-btn,
+#supabase-google-btn {
     background: #4285f4;
     color: white;
     border: none;
@@ -64,7 +71,8 @@ p {
     max-width: 200px;
 }
 
-#manual-signin-btn:hover {
+#manual-signin-btn:hover,
+#supabase-google-btn:hover {
     background: #3367d6;
 }
 
