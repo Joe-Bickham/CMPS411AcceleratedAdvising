@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "iZYFHdVP99U=",
+  "dgSpecHash": "Rkwk8bkLugg=",
   "success": true,
-  "projectFilePath": "C:\\repos\\AI Implementation branch\\PdfScraper\\PdfScraper.csproj",
+  "projectFilePath": "C:\\repos\\Advisor updated\\PdfScraper\\PdfScraper.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ggriz\\.nuget\\packages\\pdfpig\\0.1.11\\pdfpig.0.1.11.nupkg.sha512"
   ],
