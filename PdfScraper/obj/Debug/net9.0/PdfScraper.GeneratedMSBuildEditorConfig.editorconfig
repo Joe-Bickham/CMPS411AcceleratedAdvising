@@ -8,6 +8,10 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = PdfScraper
+<<<<<<< HEAD
 build_property.ProjectDir = C:\Users\kolbe\Desktop\CMPS411AcceleratedAdvising\CMPS411AcceleratedAdvising\PdfScraper\
+=======
+build_property.ProjectDir = C:\Users\joe3b\Documents\GitHub\CMPS411AcceleratedAdvising\PdfScraper\
+>>>>>>> 5776acc0aa2dd3f47d81f3b9b27be617bd98b77f
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
