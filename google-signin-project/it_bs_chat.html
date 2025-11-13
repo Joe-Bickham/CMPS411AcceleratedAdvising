@@ -125,6 +125,7 @@
     .chat-body{height:560px; overflow:auto; padding:14px;}
     .msg{background:#e8fff8; color:#06342d; padding:10px 12px; border-radius:10px; margin:8px 0; max-width:720px; white-space:pre-wrap;}
     .me{background:#156957; color:#eafff9; margin-left:auto;}
+    .data-source{font-size:11px; opacity:0.7; margin-top:4px; text-align:right; color:#0a4d3f;}
     .chips{display:flex; flex-wrap:wrap; gap:8px; padding:10px;}
     .chip{background:#eaf7f3; color:#0b3f35; border:1px solid rgba(0,0,0,.06); padding:8px 10px; border-radius:999px; font-size:13px; cursor:pointer;}
     .chip.on{background:#c9efe3; box-shadow:inset 0 0 0 2px #0c6d59;}
@@ -203,10 +204,10 @@
                 <div><strong>Program notes</strong></div>
                 <ul class="small">
                   <li>Total hours required: 120.</li>
-                  <li>Grade of “C” or higher in major courses.</li>
+                  <li>Grade of "C" or higher in major courses.</li>
                   <li>Science sequence with labs (BIOL, CHEM, or PHYS) + one additional science + lab.</li>
                 </ul>
-                <div class="small">IT catalog is auto-fetched if backend is running; otherwise the local snapshot is used.</div>
+                <div class="small" id="data-source-info">IT catalog is auto-fetched if backend is running; otherwise the local snapshot is used.</div>
               </div>
               
               <!-- Student Information Section -->
@@ -277,6 +278,18 @@
       const r = await fetch('/api/catalog/it-bs', {mode:'cors'});
         if (!r.ok) throw new Error('not ok');
         const data = await r.json();
+        
+        // Update data source info
+        const sourceInfo = document.getElementById('data-source-info');
+        if (sourceInfo) {
+          if (data.source === 'web') {
+            sourceInfo.textContent = `IT catalog dynamically loaded from university website (${data.program?.catalog_year || 'current'} catalog)`;
+            sourceInfo.style.color = '#0c8a63';
+          } else {
+            sourceInfo.textContent = `IT catalog loaded from local snapshot (${data.program?.catalog_year || 'current'} catalog)`;
+          }
+        }
+        
         return data;
       } catch {
         if (window.CATALOG_MODEL) return window.CATALOG_MODEL;
@@ -334,11 +347,19 @@
       const chat = $('#chat'), input = $('#input'), send = $('#send');
       const yearSel = $('#year'), termSel = $('#term');
 
-      function addMsg(text, me=false){
+      function addMsg(text, me=false, dataSource=null){
         const div = document.createElement('div');
         div.className = `msg${me?' me':''}`;
         div.textContent = text;
         chat.appendChild(div);
+        
+        if (dataSource && !me) {
+          const sourceDiv = document.createElement('div');
+          sourceDiv.className = 'data-source';
+          sourceDiv.textContent = `Data source: ${dataSource}`;
+          div.appendChild(sourceDiv);
+        }
+        
         chat.scrollTop = chat.scrollHeight;
       }
 
@@ -351,7 +372,11 @@
             body: JSON.stringify({ question, courseData: MODEL, completedCourses: Array.from(completed) })
           });
           const data = await response.json();
-          if (data.success) return { type: 'claude', text: data.advice };
+          if (data.success) return {
+            type: 'claude',
+            text: data.advice,
+            dataSource: data.dataSource || MODEL._source || 'unknown'
+          };
           else throw new Error(data.error);
         } catch (error) {
           console.error('Claude query failed:', error);
@@ -430,7 +455,7 @@
           if (res.notes?.length) addMsg(`Program checks:\n- ${res.notes.join('\n- ')}`);
         }
         if (res.type==='claude' || res.type==='timeline' || res.type==='recommendations'){
-          addMsg(`🤖 Claude AI Advisor:\n\n${res.text}`);
+          addMsg(`🤖 Claude AI Advisor:\n\n${res.text}`, false, res.dataSource);
         }
       }
 

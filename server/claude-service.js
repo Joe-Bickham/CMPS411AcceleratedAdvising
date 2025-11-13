@@ -110,16 +110,47 @@ export async function getAcademicAdvice(
 ) {
   const programName = degreeProgram || courseData?.program?.name || "this degree program";
   const hasLimitedData = !Array.isArray(courseData?.courses) || courseData.courses.length < 10;
-
+  const dataSource = courseData?._source || "unknown";
+  const catalogYear = courseData?.program?.catalog_year || "current";
+  
+  // Extract key program information
+  const totalHours = courseData?.program?.total_hours || 120;
+  const minGradeMajor = courseData?.program?.min_grade_major || "C";
+  
+  // Format course data in a more readable way for Claude
+  const formattedCourses = (courseData?.courses || []).map(course => {
+    return {
+      code: course.code,
+      title: course.title,
+      credits: course.credits,
+      prereqs: course.prereqs || []
+    };
+  });
+  
+  // Format plan data if available
+  const planData = courseData?.plan || {};
+  
   const system = `You are Claude, an AI academic advisor specifically for ${programName} at Southeastern Louisiana University.
 
 IMPORTANT INSTRUCTIONS:
 - You can ONLY provide information about ${programName}
 - If asked about other degree programs, politely redirect to the appropriate program advisor
 - If you don't have specific information about something, clearly state: "I don't have detailed information about [topic] in my current knowledge base. This is something that needs to be added to help students better."
+- Your data comes from the ${catalogYear} catalog and was ${dataSource === "web" ? "dynamically scraped from the university website" : "loaded from a local snapshot"}
 
-AVAILABLE PROGRAM INFORMATION:
-${JSON.stringify(courseData, null, 2)}
+PROGRAM OVERVIEW:
+- Program: ${programName}
+- Catalog Year: ${catalogYear}
+- Total Hours Required: ${totalHours}
+- Minimum Grade in Major Courses: ${minGradeMajor}
+
+AVAILABLE COURSE INFORMATION:
+${JSON.stringify(formattedCourses, null, 2)}
+
+${planData && Object.keys(planData).length > 0 ? `
+RECOMMENDED COURSE PLAN:
+${JSON.stringify(planData, null, 2)}
+` : ""}
 
 STUDENT'S COMPLETED COURSES: ${Array.from(completedCourses || []).join(", ") || "None specified"}
 
@@ -154,10 +185,39 @@ export async function generateDegreeTimeline(
   startingSemester = "Fall",
   targetGraduation = null
 ) {
-  const system = `You are an expert academic advisor specializing in degree planning and timeline optimization.
+  const programName = courseData?.program?.name || "this degree program";
+  const catalogYear = courseData?.program?.catalog_year || "current";
+  const totalHours = courseData?.program?.total_hours || 120;
+  const minGradeMajor = courseData?.program?.min_grade_major || "C";
+  
+  // Format course data in a more readable way for Claude
+  const formattedCourses = (courseData?.courses || []).map(course => {
+    return {
+      code: course.code,
+      title: course.title,
+      credits: course.credits,
+      prereqs: course.prereqs || []
+    };
+  });
+  
+  // Format plan data if available
+  const planData = courseData?.plan || {};
+  
+  const system = `You are an expert academic advisor specializing in degree planning and timeline optimization for ${programName} at Southeastern Louisiana University.
+
+PROGRAM OVERVIEW:
+- Program: ${programName}
+- Catalog Year: ${catalogYear}
+- Total Hours Required: ${totalHours}
+- Minimum Grade in Major Courses: ${minGradeMajor}
 
 AVAILABLE COURSES:
-${JSON.stringify(courseData?.courses || [], null, 2)}
+${JSON.stringify(formattedCourses, null, 2)}
+
+${planData && Object.keys(planData).length > 0 ? `
+RECOMMENDED COURSE PLAN:
+${JSON.stringify(planData, null, 2)}
+` : ""}
 
 Create detailed, realistic academic timelines that respect prerequisites and optimize student success.`;
 
@@ -201,10 +261,35 @@ export async function getCourseRecommendations(
   courseData = {},
   currentSemester = "Fall"
 ) {
-  const system = `You are an expert academic advisor providing course recommendations.
+  const programName = courseData?.program?.name || "this degree program";
+  const catalogYear = courseData?.program?.catalog_year || "current";
+  
+  // Format course data in a more readable way for Claude
+  const formattedCourses = (courseData?.courses || []).map(course => {
+    return {
+      code: course.code,
+      title: course.title,
+      credits: course.credits,
+      prereqs: course.prereqs || []
+    };
+  });
+  
+  // Format plan data if available
+  const planData = courseData?.plan || {};
+  
+  const system = `You are an expert academic advisor providing course recommendations for ${programName} at Southeastern Louisiana University.
+
+PROGRAM OVERVIEW:
+- Program: ${programName}
+- Catalog Year: ${catalogYear}
 
 AVAILABLE COURSES:
-${JSON.stringify(courseData?.courses || [], null, 2)}
+${JSON.stringify(formattedCourses, null, 2)}
+
+${planData && Object.keys(planData).length > 0 ? `
+RECOMMENDED COURSE PLAN:
+${JSON.stringify(planData, null, 2)}
+` : ""}
 
 Provide practical, well-reasoned course recommendations that help students progress efficiently toward graduation.`;
 
@@ -247,11 +332,38 @@ export async function analyzeCreditFulfillment(
   degreeProgram = ""
 ) {
   const programName = degreeProgram || courseData?.program?.name || "this degree program";
+  const catalogYear = courseData?.program?.catalog_year || "current";
+  const totalHours = courseData?.program?.total_hours || 120;
+  const minGradeMajor = courseData?.program?.min_grade_major || "C";
+  
+  // Format course data in a more readable way for Claude
+  const formattedCourses = (courseData?.courses || []).map(course => {
+    return {
+      code: course.code,
+      title: course.title,
+      credits: course.credits,
+      prereqs: course.prereqs || []
+    };
+  });
+  
+  // Format plan data if available
+  const planData = courseData?.plan || {};
   
   const system = `You are Claude, an AI academic advisor specializing in credit analysis and degree requirement fulfillment for ${programName} at Southeastern Louisiana University.
 
-PROGRAM INFORMATION:
-${JSON.stringify(courseData, null, 2)}
+PROGRAM OVERVIEW:
+- Program: ${programName}
+- Catalog Year: ${catalogYear}
+- Total Hours Required: ${totalHours}
+- Minimum Grade in Major Courses: ${minGradeMajor}
+
+AVAILABLE COURSES:
+${JSON.stringify(formattedCourses, null, 2)}
+
+${planData && Object.keys(planData).length > 0 ? `
+RECOMMENDED COURSE PLAN:
+${JSON.stringify(planData, null, 2)}
+` : ""}
 
 Your task is to analyze student credentials and determine which degree requirements are already fulfilled.
 

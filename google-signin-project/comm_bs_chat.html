@@ -303,11 +303,19 @@
       const timelineBtn = $('#timeline');
       const yearSel = $('#year'), termSel = $('#term');
 
-      function addMsg(text, me=false){
+      function addMsg(text, me=false, dataSource=null){
         const div = document.createElement('div');
         div.className = `msg${me?' me':''}`;
         div.textContent = text;
         chat.appendChild(div);
+        
+        if (dataSource && !me) {
+          const sourceDiv = document.createElement('div');
+          sourceDiv.className = 'data-source';
+          sourceDiv.textContent = `Data source: ${dataSource}`;
+          div.appendChild(sourceDiv);
+        }
+        
         chat.scrollTop = chat.scrollHeight;
       }
 
@@ -454,7 +462,7 @@
           return;
         }
         if (res.type==='claude' || res.type==='timeline' || res.type==='recommendations'){
-          addMsg(`🤖 Claude AI Advisor:\n\n${res.text}`);
+          addMsg(`🤖 Claude AI Advisor:\n\n${res.text}`, false, res.dataSource);
         }
       }
 

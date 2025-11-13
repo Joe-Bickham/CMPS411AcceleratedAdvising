@@ -1,7 +1,7 @@
 // server/server.js
-// Tiny offline backend: serves IT catalog + Core/GenEd from JSON files.
+// Backend: serves catalog data from web scraper + Core/GenEd from JSON files.
 // Endpoints:
-//   GET /api/catalog/it-bs?year=YYYY-YYYY   -> returns {program, mode:'snapshot', courses, years}
+//   GET /api/catalog/it-bs?year=YYYY-YYYY   -> returns {program, mode:'dynamic', courses, years}
 //   GET /api/core                           -> returns {courses}
 //   POST /api/claude/advice                 -> returns AI academic advice
 //   POST /api/claude/timeline               -> returns degree timeline
@@ -13,6 +13,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 import { getAcademicAdvice, generateDegreeTimeline, getCourseRecommendations, analyzeCreditFulfillment } from './claude-service.js';
+import { resolveLatestCatalogUrl, discoverLatestProgramUrl } from "./resolver.js";
+import { scrapeCatalogFromUrl } from "./scraper.js";
+import { getCache, setCache } from "./cache.js";
+import { PROGRAMS } from "./config.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,12 +31,21 @@ app.use(express.static(FRONT_DIR));
 
 // local data
 const DATA_DIR = path.join(__dirname, "data");
-const IT_FILE = path.join(DATA_DIR, "it-bs-catalog.json");
 const CORE_FILE = path.join(DATA_DIR, "core-gened.json");
 
 // helper to read JSON
 function readJson(p) {
   return JSON.parse(fs.readFileSync(p, "utf8"));
+}
+
+// helper to read JSON from file or fallback to default
+function readJsonWithFallback(filePath, defaultValue = null) {
+  try {
+    return readJson(filePath);
+  } catch (error) {
+    console.warn(`Could not read ${filePath}, using default value`);
+    return defaultValue;
+  }
 }
 
 // flatten all courses from a years/semesters structure
@@ -60,12 +73,32 @@ function dedupeByCode(list) {
 }
 
 // GET IT catalog (optionally ?year=YYYY-YYYY)
-app.get("/api/catalog/it-bs", (req, res) => {
+app.get("/api/catalog/it-bs", async (req, res) => {
   try {
-    const raw = readJson(IT_FILE); // { program, years:{}, courses?:[] }
-    const { program, years } = raw;
-    const courses = raw.courses && raw.courses.length
-      ? raw.courses
+    // Try to get from web scraper first
+    const programKey = "it-bs";
+    const cacheKey = `model:${programKey}`;
+    let catalogData = getCache(cacheKey);
+    
+    if (!catalogData) {
+      try {
+        // Try to get from web
+        const url = await resolveLatestCatalogUrl(programKey);
+        catalogData = await scrapeCatalogFromUrl(url);
+        setCache(cacheKey, catalogData, 6 * 60 * 60 * 1000); // Cache for 6 hours
+        console.log(`Loaded IT catalog from web: ${url}`);
+      } catch (webError) {
+        console.warn("Failed to load IT catalog from web:", webError.message);
+        // Fallback to local file
+        const IT_FILE = path.join(DATA_DIR, "it-bs-catalog.json");
+        catalogData = readJsonWithFallback(IT_FILE, { program: null, courses: [], years: {} });
+        console.log("Loaded IT catalog from local file");
+      }
+    }
+    
+    const { program, years } = catalogData;
+    const courses = catalogData.courses && catalogData.courses.length
+      ? catalogData.courses
       : flattenYears(years);
 
     // you can pass ?year=2024-2025 (we still return all courses, but the client can highlight)
@@ -75,7 +108,8 @@ app.get("/api/catalog/it-bs", (req, res) => {
       program: { ...(program || {}), selected_year: yearParam },
       years: years || {},
       courses: dedupeByCode(courses),
-      mode: "snapshot",
+      mode: catalogData._source === "web" ? "dynamic" : "snapshot",
+      source: catalogData._source || "unknown"
     });
   } catch (e) {
     console.error(e);
@@ -84,16 +118,38 @@ app.get("/api/catalog/it-bs", (req, res) => {
 });
 
 // GET Communication catalog
-app.get("/api/catalog/comm-bs", (req, res) => {
+app.get("/api/catalog/comm-bs", async (req, res) => {
   try {
-    const COMM_FILE = path.join(DATA_DIR, "comm-bs-catalog.json");
-    const raw = readJson(COMM_FILE);
-    const { program, courses } = raw;
+    // Try to get from web scraper first
+    const programKey = "comm-bs";
+    const cacheKey = `model:${programKey}`;
+    let catalogData = getCache(cacheKey);
+    
+    if (!catalogData) {
+      try {
+        // Try to get from web
+        const url = await resolveLatestCatalogUrl(programKey);
+        catalogData = await scrapeCatalogFromUrl(url);
+        catalogData._source = "web";
+        setCache(cacheKey, catalogData, 6 * 60 * 60 * 1000); // Cache for 6 hours
+        console.log(`Loaded Communication catalog from web: ${url}`);
+      } catch (webError) {
+        console.warn("Failed to load Communication catalog from web:", webError.message);
+        // Fallback to local file
+        const COMM_FILE = path.join(DATA_DIR, "comm-bs-catalog.json");
+        catalogData = readJsonWithFallback(COMM_FILE, { program: null, courses: [], years: {} });
+        catalogData._source = "local";
+        console.log("Loaded Communication catalog from local file");
+      }
+    }
+    
+    const { program, courses } = catalogData;
     
     res.json({
       program: program || {},
       courses: courses || [],
-      mode: "snapshot",
+      mode: catalogData._source === "web" ? "dynamic" : "snapshot",
+      source: catalogData._source || "unknown"
     });
   } catch (e) {
     console.error(e);
@@ -200,16 +256,38 @@ app.post("/api/claude/degree-specific", async (req, res) => {
     
     // Load appropriate catalog based on program
     let catalogData = {};
-    try {
-      if (programKey === 'it-bs-2024-25') {
-        const itData = readJson(path.join(DATA_DIR, "it-bs-catalog.json"));
-        catalogData = itData;
-      } else if (programKey === 'comm-bs-2024-25') {
-        const commData = readJson(path.join(DATA_DIR, "comm-bs-catalog.json"));
-        catalogData = commData;
+    let programSlug = '';
+    
+    if (programKey === 'it-bs-2024-25' || programKey === 'it-bs') {
+      programSlug = 'it-bs';
+    } else if (programKey === 'comm-bs-2024-25' || programKey === 'comm-bs') {
+      programSlug = 'comm-bs';
+    }
+    
+    if (programSlug) {
+      // Try to get from cache first
+      const cacheKey = `model:${programSlug}`;
+      catalogData = getCache(cacheKey);
+      
+      if (!catalogData) {
+        try {
+          // Try to get from web
+          const url = await resolveLatestCatalogUrl(programSlug);
+          catalogData = await scrapeCatalogFromUrl(url);
+          setCache(cacheKey, catalogData, 6 * 60 * 60 * 1000); // Cache for 6 hours
+          console.log(`Loaded ${programSlug} catalog from web for Claude AI`);
+        } catch (webError) {
+          console.warn(`Failed to load ${programSlug} catalog from web:`, webError.message);
+          // Fallback to local file
+          try {
+            const filePath = path.join(DATA_DIR, `${programSlug.replace('-', '-')}-catalog.json`);
+            catalogData = readJson(filePath);
+            console.log(`Loaded ${programSlug} catalog from local file for Claude AI`);
+          } catch (fileError) {
+            console.log('Catalog not found, proceeding with limited data');
+          }
+        }
       }
-    } catch (catalogError) {
-      console.log('Catalog not found, proceeding with limited data');
     }
     
     const advice = await getAcademicAdvice(question, catalogData, [], degreeProgram);
@@ -218,8 +296,9 @@ app.post("/api/claude/degree-specific", async (req, res) => {
       success: true,
       advice: advice,
       timestamp: new Date().toISOString(),
-      model: 'claude-sonnet-4',
-      program: degreeProgram
+      model: 'claude-3-5-sonnet',
+      program: degreeProgram,
+      dataSource: catalogData._source || 'unknown'
     });
   } catch (error) {
     console.error('Claude degree-specific advice error:', error);
@@ -258,8 +337,25 @@ app.post("/api/claude/credit-analysis", async (req, res) => {
   }
 });
 
+// Background refresh every 12h
+const KEYS = Object.keys(PROGRAMS);
+setInterval(async () => {
+  for (const k of KEYS) {
+    try {
+      const url = await resolveLatestCatalogUrl(k);
+      const model = await scrapeCatalogFromUrl(url);
+      model._source = "web";
+      setCache(`model:${k}`, model, 12 * 60 * 60 * 1000);
+      console.log(`[refresh] ${k} ok from ${url} (${model.courses?.length || 0} courses)`);
+    } catch (e) {
+      console.warn(`[refresh] ${k} failed:`, e?.message || e);
+    }
+  }
+}, 12 * 60 * 60 * 1000);
+
 // serve nothing else – this server is data-only
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Catalog backend with Claude AI on http://localhost:${PORT}`);
+  console.log(`Using web scraper for dynamic catalog data when available`);
 });
