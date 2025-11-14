@@ -32,6 +32,7 @@ app.use(express.static(FRONT_DIR));
 // local data
 const DATA_DIR = path.join(__dirname, "data");
 const CORE_FILE = path.join(DATA_DIR, "core-gened.json");
+const CJ_FILE = path.join(DATA_DIR, "cj-bs-catalog.json");
 
 // helper to read JSON
 function readJson(p) {
@@ -120,6 +121,7 @@ app.get("/api/catalog/it-bs", async (req, res) => {
 // GET Communication catalog
 app.get("/api/catalog/comm-bs", async (req, res) => {
   try {
+<<<<<<< HEAD
     // Try to get from web scraper first
     const programKey = "comm-bs";
     const cacheKey = `model:${programKey}`;
@@ -145,6 +147,12 @@ app.get("/api/catalog/comm-bs", async (req, res) => {
     
     const { program, courses } = catalogData;
     
+=======
+    const COMM_FILE = path.join(DATA_DIR, "comm-bs-catalog.json");
+    const raw = readJson(COMM_FILE);
+    const { program, courses } = raw;
+
+>>>>>>> new-criminal-justice-page
     res.json({
       program: program || {},
       courses: courses || [],
@@ -154,6 +162,24 @@ app.get("/api/catalog/comm-bs", async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Failed to load Communication catalog" });
+  }
+});
+
+// GET Criminal Justice catalog
+app.get("/api/catalog/cj-bs", (req, res) => {
+  try {
+    const raw = readJson(CJ_FILE);
+    const { program, courses, groups } = raw;
+
+    res.json({
+      program: program || {},
+      courses: courses || [],
+      groups: groups || [],
+      mode: "snapshot",
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Failed to load Criminal Justice catalog" });
   }
 });
 
@@ -256,6 +282,7 @@ app.post("/api/claude/degree-specific", async (req, res) => {
     
     // Load appropriate catalog based on program
     let catalogData = {};
+<<<<<<< HEAD
     let programSlug = '';
     
     if (programKey === 'it-bs-2024-25' || programKey === 'it-bs') {
@@ -287,6 +314,18 @@ app.post("/api/claude/degree-specific", async (req, res) => {
             console.log('Catalog not found, proceeding with limited data');
           }
         }
+=======
+    try {
+      if (programKey === 'it-bs-2024-25') {
+        const itData = readJson(path.join(DATA_DIR, "it-bs-catalog.json"));
+        catalogData = itData;
+      } else if (programKey === 'comm-bs-2024-25') {
+        const commData = readJson(path.join(DATA_DIR, "comm-bs-catalog.json"));
+        catalogData = commData;
+      } else if (programKey === 'cj-bs-2024-25') {
+        const cjData = readJson(path.join(DATA_DIR, "cj-bs-catalog.json"));
+        catalogData = cjData;
+>>>>>>> new-criminal-justice-page
       }
     }
     
@@ -357,5 +396,9 @@ setInterval(async () => {
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Catalog backend with Claude AI on http://localhost:${PORT}`);
+<<<<<<< HEAD
   console.log(`Using web scraper for dynamic catalog data when available`);
 });
+=======
+});
+>>>>>>> new-criminal-justice-page

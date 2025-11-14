@@ -1,10 +1,16 @@
 {
   "version": 2,
+<<<<<<< HEAD
   "dgSpecHash": "Rkwk8bkLugg=",
   "success": true,
   "projectFilePath": "C:\\repos\\Advisor updated\\PdfScraper\\PdfScraper.csproj",
+=======
+  "dgSpecHash": "eegAZPp8D/E=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\elayk\\CMPS411AcceleratedAdvising\\PdfScraper\\PdfScraper.csproj",
+>>>>>>> new-criminal-justice-page
   "expectedPackageFiles": [
-    "C:\\Users\\ggriz\\.nuget\\packages\\pdfpig\\0.1.11\\pdfpig.0.1.11.nupkg.sha512"
+    "C:\\Users\\elayk\\.nuget\\packages\\pdfpig\\0.1.11\\pdfpig.0.1.11.nupkg.sha512"
   ],
   "logs": []
 }
