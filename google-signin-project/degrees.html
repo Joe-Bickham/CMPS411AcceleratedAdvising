@@ -102,20 +102,11 @@
       }
     } catch {}
 
-<<<<<<< HEAD
     // Use relative paths within the same folder for simpler, robust routing
     const CHAT_PAGE = 'it_bs_chat.html';
     const DEPT_PAGE = 'department-selection.html';
     const COMM_PAGE = 'comm_bs_chat.html';
-=======
-    // Are we already inside /google-signin-project/? If yes, don't repeat the folder.
-    const IN_SUBFOLDER = window.location.pathname.replace(/\\/g,'/').includes('/google-signin-project/');
-    const CHAT_PAGE = IN_SUBFOLDER ? 'it_bs_chat.html' : 'google-signin-project/it_bs_chat.html';
-    const DEPT_PAGE = IN_SUBFOLDER ? 'department-selection.html' : 'google-signin-project/department-selection.html';
-    const COMM_PAGE = IN_SUBFOLDER ? 'comm_bs_chat.html' : 'google-signin-project/comm_bs_chat.html';
-    const CJ_PAGE = IN_SUBFOLDER ? 'cj_bs_chat.html' : 'google-signin-project/cj_bs_chat.html';
->>>>>>> new-criminal-justice-page
-
+    const CJ_PAGE = 'cj_bs_chat.html';
     function go(relPath){
       const url = new URL(relPath, window.location.href).toString();
       window.location.assign(url);
@@ -157,11 +148,11 @@
           storage: 'soc-placeholder'
         },
         {
-          id: 'cj-bs',
+          id: 'cj-placeholder',
           title: 'Criminal Justice, BS',
-          pill: '2024-2025',
+          pill: 'Coming Soon',
           page: CJ_PAGE,
-          storage: 'cj-bs-2024-25'
+          storage: 'cj-placeholder'
         }
       ]
     };
