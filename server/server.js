@@ -15,6 +15,7 @@ import fs from "fs";
 import { getAcademicAdvice, generateDegreeTimeline, getCourseRecommendations, analyzeCreditFulfillment } from './claude-service.js';
 import { resolveLatestCatalogUrl, discoverLatestProgramUrl } from "./resolver.js";
 import { scrapeCatalogFromUrl } from "./scraper.js";
+import { scrapeProgramWithScrapy, scrapeProgramIndexWithScrapy } from "./scrapy-runner.js";
 import { getCache, setCache } from "./cache.js";
 import { PROGRAMS } from "./config.js";
 
@@ -32,7 +33,16 @@ app.use(express.static(FRONT_DIR));
 // local data
 const DATA_DIR = path.join(__dirname, "data");
 const CORE_FILE = path.join(DATA_DIR, "core-gened.json");
+<<<<<<< Updated upstream
 const CJ_FILE = path.join(DATA_DIR, "cj-bs-catalog.json");
+=======
+const PROGRAM_INDEX_FILE = path.join(DATA_DIR, "programs-index.json");
+
+const PROGRAM_FALLBACKS = {
+  "it-bs": "it-bs-catalog.json",
+  "comm-bs": "comm-bs-catalog.json"
+};
+>>>>>>> Stashed changes
 
 // helper to read JSON
 function readJson(p) {
@@ -73,29 +83,91 @@ function dedupeByCode(list) {
   return out;
 }
 
+// Helper: prefer the Program-of-Study discovery flow, fallback to resolver seeds
+async function getProgramCatalogUrl(programKey) {
+  if (PROGRAMS[programKey]) {
+    try {
+      return await discoverLatestProgramUrl(programKey);
+    } catch (err) {
+      console.warn(`[resolver] discoverLatestProgramUrl failed for ${programKey}: ${err?.message || err}`);
+    }
+  }
+  return resolveLatestCatalogUrl(programKey);
+}
+
+async function loadCatalog(programKey, options = {}) {
+  const cacheKey = `model:${programKey}`;
+  if (!options.force) {
+    const cached = getCache(cacheKey);
+    if (cached) return cached;
+  }
+
+  let model = null;
+  try {
+    model = await scrapeProgramWithScrapy(programKey);
+  } catch (scrapyError) {
+    console.warn(`[scrapy] ${programKey} failed: ${scrapyError?.message || scrapyError}`);
+  }
+
+  if (!model) {
+    try {
+      const url = await getProgramCatalogUrl(programKey);
+      model = await scrapeCatalogFromUrl(url);
+      model._source = "web";
+    } catch (webError) {
+      console.warn(`[resolver] ${programKey} fallback to local: ${webError?.message || webError}`);
+      const fallback = PROGRAM_FALLBACKS[programKey];
+      if (fallback) {
+        model = readJsonWithFallback(path.join(DATA_DIR, fallback), { program: null, courses: [], years: {} });
+        if (model && !model._source) model._source = "local";
+      } else {
+        throw webError;
+      }
+    }
+  }
+
+  if (model && !model._source) model._source = "web";
+  const ttl = options.ttl ?? 6 * 60 * 60 * 1000;
+  setCache(cacheKey, model, ttl);
+  return model;
+}
+
+async function loadProgramList(force = false) {
+  const cacheKey = "programIndex";
+  if (!force) {
+    const cached = getCache(cacheKey);
+    if (cached) return cached;
+  }
+  let list = [];
+  try {
+    list = await scrapeProgramIndexWithScrapy();
+  } catch (err) {
+    console.warn(`[scrapy] program index failed: ${err?.message || err}`);
+    list = readJsonWithFallback(PROGRAM_INDEX_FILE, []);
+  }
+  setCache(cacheKey, list, 6 * 60 * 60 * 1000);
+  return list;
+}
+
+// All catalog programs (for populating dropdowns/lists)
+app.get("/api/catalog/programs", async (req, res) => {
+  try {
+    const refresh = req.query.refresh === "1";
+    const list = await loadProgramList(refresh);
+    res.json({ programs: list, count: list.length });
+  } catch (error) {
+    console.error("Program index error:", error);
+    res.status(500).json({ error: "Failed to load program index" });
+  }
+});
+
 // GET IT catalog (optionally ?year=YYYY-YYYY)
 app.get("/api/catalog/it-bs", async (req, res) => {
   try {
     // Try to get from web scraper first
     const programKey = "it-bs";
-    const cacheKey = `model:${programKey}`;
-    let catalogData = getCache(cacheKey);
-    
-    if (!catalogData) {
-      try {
-        // Try to get from web
-        const url = await resolveLatestCatalogUrl(programKey);
-        catalogData = await scrapeCatalogFromUrl(url);
-        setCache(cacheKey, catalogData, 6 * 60 * 60 * 1000); // Cache for 6 hours
-        console.log(`Loaded IT catalog from web: ${url}`);
-      } catch (webError) {
-        console.warn("Failed to load IT catalog from web:", webError.message);
-        // Fallback to local file
-        const IT_FILE = path.join(DATA_DIR, "it-bs-catalog.json");
-        catalogData = readJsonWithFallback(IT_FILE, { program: null, courses: [], years: {} });
-        console.log("Loaded IT catalog from local file");
-      }
-    }
+    const catalogData = await loadCatalog(programKey);
+    if (!catalogData) throw new Error("No catalog data available");
     
     const { program, years } = catalogData;
     const courses = catalogData.courses && catalogData.courses.length
@@ -124,26 +196,8 @@ app.get("/api/catalog/comm-bs", async (req, res) => {
 <<<<<<< HEAD
     // Try to get from web scraper first
     const programKey = "comm-bs";
-    const cacheKey = `model:${programKey}`;
-    let catalogData = getCache(cacheKey);
-    
-    if (!catalogData) {
-      try {
-        // Try to get from web
-        const url = await resolveLatestCatalogUrl(programKey);
-        catalogData = await scrapeCatalogFromUrl(url);
-        catalogData._source = "web";
-        setCache(cacheKey, catalogData, 6 * 60 * 60 * 1000); // Cache for 6 hours
-        console.log(`Loaded Communication catalog from web: ${url}`);
-      } catch (webError) {
-        console.warn("Failed to load Communication catalog from web:", webError.message);
-        // Fallback to local file
-        const COMM_FILE = path.join(DATA_DIR, "comm-bs-catalog.json");
-        catalogData = readJsonWithFallback(COMM_FILE, { program: null, courses: [], years: {} });
-        catalogData._source = "local";
-        console.log("Loaded Communication catalog from local file");
-      }
-    }
+    const catalogData = await loadCatalog(programKey);
+    if (!catalogData) throw new Error("No catalog data available");
     
     const { program, courses } = catalogData;
     
@@ -292,6 +346,7 @@ app.post("/api/claude/degree-specific", async (req, res) => {
     }
     
     if (programSlug) {
+<<<<<<< Updated upstream
       // Try to get from cache first
       const cacheKey = `model:${programSlug}`;
       catalogData = getCache(cacheKey);
@@ -327,6 +382,9 @@ app.post("/api/claude/degree-specific", async (req, res) => {
         catalogData = cjData;
 >>>>>>> new-criminal-justice-page
       }
+=======
+      catalogData = await loadCatalog(programSlug);
+>>>>>>> Stashed changes
     }
     
     const advice = await getAcademicAdvice(question, catalogData, [], degreeProgram);
@@ -381,11 +439,8 @@ const KEYS = Object.keys(PROGRAMS);
 setInterval(async () => {
   for (const k of KEYS) {
     try {
-      const url = await resolveLatestCatalogUrl(k);
-      const model = await scrapeCatalogFromUrl(url);
-      model._source = "web";
-      setCache(`model:${k}`, model, 12 * 60 * 60 * 1000);
-      console.log(`[refresh] ${k} ok from ${url} (${model.courses?.length || 0} courses)`);
+      const model = await loadCatalog(k, { force: true, ttl: 12 * 60 * 60 * 1000 });
+      console.log(`[refresh] ${k} ok (${model.courses?.length || 0} courses, source ${model._source})`);
     } catch (e) {
       console.warn(`[refresh] ${k} failed:`, e?.message || e);
     }

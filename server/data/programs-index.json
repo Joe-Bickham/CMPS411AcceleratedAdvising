@@ -1,0 +1,26 @@
+[
+  {
+    "program": {
+      "key": "it-bs",
+      "name": "Information Technology, BS",
+      "catalog_year": "snapshot",
+      "catoid": null,
+      "navoid": null
+    },
+    "courses": [],
+    "source_url": "https://catalog.southeastern.edu/",
+    "_source": "local"
+  },
+  {
+    "program": {
+      "key": "comm-bs",
+      "name": "Communication, BS",
+      "catalog_year": "snapshot",
+      "catoid": null,
+      "navoid": null
+    },
+    "courses": [],
+    "source_url": "https://catalog.southeastern.edu/",
+    "_source": "local"
+  }
+]

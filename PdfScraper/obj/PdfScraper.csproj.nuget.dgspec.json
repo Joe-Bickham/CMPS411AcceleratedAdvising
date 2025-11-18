@@ -1,15 +1,20 @@
 {
   "format": 1,
   "restore": {
+<<<<<<< Updated upstream
 <<<<<<< HEAD
     "C:\\repos\\Advisor updated\\PdfScraper\\PdfScraper.csproj": {}
+=======
+    "C:\\Users\\Owner\\OneDrive\\Desktop\\CMPS411AcceleratedAdvising\\CMPS411AcceleratedAdvising\\PdfScraper\\PdfScraper.csproj": {}
+>>>>>>> Stashed changes
   },
   "projects": {
-    "C:\\repos\\Advisor updated\\PdfScraper\\PdfScraper.csproj": {
+    "C:\\Users\\Owner\\OneDrive\\Desktop\\CMPS411AcceleratedAdvising\\CMPS411AcceleratedAdvising\\PdfScraper\\PdfScraper.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\repos\\Advisor updated\\PdfScraper\\PdfScraper.csproj",
+        "projectUniqueName": "C:\\Users\\Owner\\OneDrive\\Desktop\\CMPS411AcceleratedAdvising\\CMPS411AcceleratedAdvising\\PdfScraper\\PdfScraper.csproj",
         "projectName": "PdfScraper",
+<<<<<<< Updated upstream
         "projectPath": "C:\\repos\\Advisor updated\\PdfScraper\\PdfScraper.csproj",
         "packagesPath": "C:\\Users\\ggriz\\.nuget\\packages\\",
         "outputPath": "C:\\repos\\Advisor updated\\PdfScraper\\obj\\",
@@ -26,12 +31,21 @@
         "packagesPath": "C:\\Users\\elayk\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\elayk\\CMPS411AcceleratedAdvising\\PdfScraper\\obj\\",
 >>>>>>> new-criminal-justice-page
+=======
+        "projectPath": "C:\\Users\\Owner\\OneDrive\\Desktop\\CMPS411AcceleratedAdvising\\CMPS411AcceleratedAdvising\\PdfScraper\\PdfScraper.csproj",
+        "packagesPath": "C:\\Users\\Owner\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Owner\\OneDrive\\Desktop\\CMPS411AcceleratedAdvising\\CMPS411AcceleratedAdvising\\PdfScraper\\obj\\",
+>>>>>>> Stashed changes
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
+<<<<<<< Updated upstream
           "C:\\Users\\elayk\\AppData\\Roaming\\NuGet\\NuGet.Config",
+=======
+          "C:\\Users\\Owner\\AppData\\Roaming\\NuGet\\NuGet.Config",
+>>>>>>> Stashed changes
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -85,7 +99,11 @@
               "privateAssets": "all"
             }
           },
+<<<<<<< Updated upstream
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
+=======
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.112/PortableRuntimeIdentifierGraph.json"
+>>>>>>> Stashed changes
         }
       }
     }

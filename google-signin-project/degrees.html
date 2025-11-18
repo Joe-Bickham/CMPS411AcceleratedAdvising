@@ -60,6 +60,13 @@
     .degree-btn:active{ transform:translateY(0); }
     .pill{ display:inline-block; margin-left:10px; font-size:13px; font-weight:700; color:var(--ink);
       background:#145647; padding:4px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.18);}
+    .live-section{margin-top:32px; padding-top:20px; border-top:1px solid var(--panel-b);}
+    .live-header{display:flex; justify-content:space-between; align-items:center; gap:12px;}
+    .live-header h2{margin:0; font-size:20px;}
+    .refresh-live{background:transparent; border:1px solid var(--panel-b); color:var(--ink);
+      border-radius:999px; padding:6px 14px; font-weight:600; cursor:pointer;}
+    .refresh-live:hover{border-color:var(--gold);}
+    .button-list.live{max-height:360px; overflow-y:auto;}
   </style>
 </head>
 <body>
@@ -81,6 +88,15 @@
 
       <div class="button-list" id="program-list">
         <!-- Programs will be populated by JavaScript based on selected department -->
+      </div>
+
+      <div class="live-section">
+        <div class="live-header">
+          <h2>Live Catalog Programs</h2>
+          <button class="refresh-live" id="refresh-live">Refresh</button>
+        </div>
+        <p class="sub" id="live-status">Loading live catalog list...</p>
+        <div class="button-list live" id="catalog-programs"></div>
       </div>
       
       <div class="button-list" style="margin-top: 20px;">
@@ -106,7 +122,16 @@
     const CHAT_PAGE = 'it_bs_chat.html';
     const DEPT_PAGE = 'department-selection.html';
     const COMM_PAGE = 'comm_bs_chat.html';
+<<<<<<< Updated upstream
     const CJ_PAGE = 'cj_bs_chat.html';
+=======
+
+    const PROGRAM_PAGE_MAP = {
+      'it-bs': { page: CHAT_PAGE, storage: 'it-bs-2024-25' },
+      'comm-bs': { page: COMM_PAGE, storage: 'comm-bs-2024-25' }
+    };
+
+>>>>>>> Stashed changes
     function go(relPath){
       const url = new URL(relPath, window.location.href).toString();
       window.location.assign(url);
@@ -157,6 +182,38 @@
       ]
     };
 
+    const slugifyName = (name = '') => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+    function buildCatalogButton(entry) {
+      const program = entry?.program || {};
+      const key = program.key || slugifyName(program.name || '');
+      const pill = program.catalog_year || 'live';
+      const name = program.name || 'Program';
+      const btn = document.createElement('a');
+      btn.className = 'degree-btn';
+      btn.href = '#';
+      btn.dataset.programKey = key;
+      btn.innerHTML = `${name} <span class="pill">${pill}</span>`;
+
+      const mapping = PROGRAM_PAGE_MAP[key];
+      if (mapping?.page) {
+        btn.href = mapping.page;
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          try { localStorage.setItem('aa_program', mapping.storage || key); } catch {}
+          go(mapping.page);
+        });
+      } else {
+        btn.style.opacity = '0.65';
+        btn.style.cursor = 'not-allowed';
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          alert('Live program data available. Add a chat page for this program to enable advising.');
+        });
+      }
+      return btn;
+    }
+
     // Get selected department and populate programs
     const selectedDept = localStorage.getItem('aa_department');
     if (!selectedDept) {
@@ -202,6 +259,43 @@
         programList.appendChild(btn);
       });
     }
+    
+    async function loadLivePrograms(force = false) {
+      const statusEl = document.getElementById('live-status');
+      const container = document.getElementById('catalog-programs');
+      if (!statusEl || !container) return;
+      statusEl.textContent = force ? 'Refreshing live catalog list...' : 'Loading live catalog list...';
+      container.innerHTML = '';
+      try {
+        const endpoint = force ? '/api/catalog/programs?refresh=1' : '/api/catalog/programs';
+        const resp = await fetch(endpoint, { cache: 'no-store' });
+        if (!resp.ok) throw new Error('request-failed');
+        const payload = await resp.json();
+        const programs = Array.isArray(payload?.programs) ? payload.programs : [];
+        if (!programs.length) {
+          statusEl.textContent = 'Live catalog returned no programs.';
+          return;
+        }
+        programs.sort((a, b) => (a?.program?.name || '').localeCompare(b?.program?.name || '', undefined, { sensitivity: 'base' }));
+        const seen = new Set();
+        programs.forEach((entry) => {
+          const key = entry?.program?.key || slugifyName(entry?.program?.name || '');
+          if (seen.has(key)) return;
+          seen.add(key);
+          container.appendChild(buildCatalogButton(entry));
+        });
+        statusEl.textContent = `Live catalog programs (${seen.size})`;
+      } catch (err) {
+        console.error('Live catalog load failed', err);
+        statusEl.textContent = 'Unable to load live catalog list.';
+      }
+    }
+
+    const refreshLiveBtn = document.getElementById('refresh-live');
+    if (refreshLiveBtn) {
+      refreshLiveBtn.addEventListener('click', () => loadLivePrograms(true));
+    }
+    loadLivePrograms();
 
     // Normalize back button label (in case of stray escape chars)
     try { document.getElementById('back-btn').textContent = '← Back to Department Selection'; } catch {}

@@ -1,5 +1,6 @@
 {
   "version": 2,
+<<<<<<< Updated upstream
 <<<<<<< HEAD
   "dgSpecHash": "Rkwk8bkLugg=",
   "success": true,
@@ -11,6 +12,13 @@
 >>>>>>> new-criminal-justice-page
   "expectedPackageFiles": [
     "C:\\Users\\elayk\\.nuget\\packages\\pdfpig\\0.1.11\\pdfpig.0.1.11.nupkg.sha512"
+=======
+  "dgSpecHash": "OEwVyS5OVM0=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Owner\\OneDrive\\Desktop\\CMPS411AcceleratedAdvising\\CMPS411AcceleratedAdvising\\PdfScraper\\PdfScraper.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Owner\\.nuget\\packages\\pdfpig\\0.1.11\\pdfpig.0.1.11.nupkg.sha512"
+>>>>>>> Stashed changes
   ],
   "logs": []
 }

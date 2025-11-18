@@ -37,6 +37,16 @@ Program configurations are stored in `config.js`:
 - `BASE`: Contains the university website URL and seed paths for finding catalog pages
 - `PROGRAMS`: Maps program keys to their full names and search hints
 
+## Scrapy-based Catalog Discovery
+
+- A dedicated Scrapy project lives under `scrapy_catalog/`. It crawls the official Programs of Study index (`preview_program.php` pages) and extracts program metadata, course lists, and prerequisite hints.
+- The Node server automatically runs the Scrapy spider whenever a catalog endpoint is hit, caching the parsed JSON for 6 hours. If Scrapy fails, it falls back to the previous Axios/Cheerio parser and finally to the JSON snapshots in `server/data/`.
+- You can run the spider manually:
+  - `scrapy crawl programs -a include_courses=0 -O server/data/programs-index.json` (updates the dropdown/source list)
+  - `scrapy crawl programs -a program_hint="Information Technology, BS" -a program_key=it-bs -O tmp.json`
+- Install Scrapy globally (`pip install scrapy`) so the Node server can spawn it.
+- A new API endpoint, `GET /api/catalog/programs`, returns the scraped list of live programs. The frontend degree selection page consumes this endpoint to populate the dropdown with real-time catalog entries.
+
 ## Usage
 
 To start the server:

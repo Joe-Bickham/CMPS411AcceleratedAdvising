@@ -3,6 +3,9 @@ import * as cheerio from "cheerio";
 import { BASE, PROGRAMS } from "./config.js";
 import { getCache, setCache } from "./cache.js";
 
+const CATALOG_HOST = "https://catalog.southeastern.edu";
+const PROGRAM_INDEX_TTL = 12 * 60 * 60 * 1000;
+
 // Try a few URLs, pick the page that (a) contains the program hints,
 // and (b) has the highest catalog year mentioned in text.
 export async function resolveLatestCatalogUrl(programKey) {
@@ -74,46 +77,153 @@ export async function discoverLatestProgramUrl(programKey, landingUrl = "https:/
   const progName = (program.name || "").trim();
   if (!progName) throw new Error(`Program ${programKey} missing 'name' in config.js`);
 
+  const targetNames = buildProgramNameVariants(program);
+
   // 1) Collect catoid candidates from landing pages
-  const landingCandidates = [landingUrl, "https://catalog.southeastern.edu/"];
+  const landingCandidates = [landingUrl, CATALOG_HOST + "/", "https://www.southeastern.edu/catalog/index.html"];
   const catoids = new Set();
   for (const u of landingCandidates) {
     try {
       const html = await fetchHTML(u);
       const $ = cheerio.load(html);
       $('a[href*="catoid="]').each((_, a) => {
-        const href = String($(a).attr('href') || '');
-        const m = href.match(/catoid=(\d+)/);
-        if (m) catoids.add(Number(m[1]));
+        const href = String($(a).attr("href") || "");
+        const match = href.match(/catoid=(\d+)/);
+        if (match) catoids.add(Number(match[1]));
       });
-    } catch {}
+    } catch {
+      // ignore landing fetch failures
+    }
   }
-  // Fallback to a reasonable range if nothing found
-  if (catoids.size === 0) [8,7,6,5].forEach(n => catoids.add(n));
-  const cids = Array.from(catoids).sort((a,b)=>b-a);
+  if (catoids.size === 0) [10, 9, 8, 7, 6, 5].forEach((n) => catoids.add(n));
+  const cids = Array.from(catoids).sort((a, b) => b - a);
 
-  // 2) For each catoid, try to find the Programs of Study A–Z index and the program link
+  // 2) For each catoid, look up the Programs of Study index and find the matching program
   for (const cid of cids) {
-    const indexUrl = `https://catalog.southeastern.edu/content.php?catoid=${cid}&navoid=155`;
     try {
-      const html = await fetchHTML(indexUrl);
-      const $ = cheerio.load(html);
-      // Find an anchor whose text matches the exact program name
-      let progHref = null;
-      $('a[href*="preview_program.php"]').each((_, a) => {
-        const text = String($(a).text() || '').trim();
-        if (text.toLowerCase() === progName.toLowerCase()) {
-          progHref = $(a).attr('href');
-          return false;
-        }
-      });
-      if (progHref) {
-        const abs = progHref.startsWith('http') ? progHref : `https://catalog.southeastern.edu/${progHref.replace(/^\//,'')}`;
-        return setCache(cacheKey, abs, 12 * 60 * 60 * 1000);
+      const indexData = await fetchProgramsOfStudy(cid);
+      if (!indexData.programs?.length) continue;
+
+      const match = selectProgramFromIndex(indexData.programs, targetNames);
+      if (match?.url) {
+        return setCache(cacheKey, match.url, 12 * 60 * 60 * 1000);
       }
-    } catch {}
+    } catch {
+      // try next catoid
+    }
   }
 
   // If not found, fall back to the prior resolver method
   return resolveLatestCatalogUrl(programKey);
+}
+
+function buildProgramNameVariants(program) {
+  const values = [
+    program.name,
+    ...(program.aliases || []),
+    ...(program.hints || []),
+  ]
+    .map((v) => canonicalProgramName(v))
+    .filter(Boolean);
+  return Array.from(new Set(values));
+}
+
+function canonicalProgramName(name) {
+  if (!name) return "";
+  return normalizeText(name)
+    .replace(/\b(bachelor\s+of\s+science|b\.?s\.?)\b/g, "bs")
+    .replace(/\b(bachelor\s+of\s+arts|b\.?a\.?)\b/g, "ba")
+    .replace(/\b(master\s+of\s+science|m\.?s\.?)\b/g, "ms")
+    .replace(/\b(master\s+of\s+arts|m\.?a\.?)\b/g, "ma")
+    .replace(/\bdegree\b/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function selectProgramFromIndex(programs, targetNames) {
+  if (!programs?.length || !targetNames?.length) return null;
+
+  const exact = programs.find((p) => targetNames.includes(p.canonical));
+  if (exact) return exact;
+
+  return programs.find((p) =>
+    targetNames.some((target) => target.length >= 4 && p.canonical.includes(target))
+  );
+}
+
+async function fetchProgramsOfStudy(catoid) {
+  const cacheKey = `programIndex:${catoid}`;
+  const cached = getCache(cacheKey);
+  if (cached) return cached;
+
+  const navIds = await discoverProgramNavIds(catoid);
+  for (const navId of navIds) {
+    const indexUrl = `${CATALOG_HOST}/content.php?catoid=${catoid}&navoid=${navId}`;
+    try {
+      const html = await fetchHTML(indexUrl);
+      const programs = extractProgramsFromIndex(html);
+      if (programs.length) {
+        return setCache(
+          cacheKey,
+          { catoid, navoid: navId, url: indexUrl, programs },
+          PROGRAM_INDEX_TTL
+        );
+      }
+    } catch {
+      // try next nav id
+    }
+  }
+
+  return { catoid, navoid: null, url: null, programs: [] };
+}
+
+async function discoverProgramNavIds(catoid) {
+  const navIds = new Set([155]);
+  const candidates = [
+    `${CATALOG_HOST}/content.php?catoid=${catoid}`,
+    `${CATALOG_HOST}/index.php?catoid=${catoid}`,
+  ];
+
+  for (const url of candidates) {
+    try {
+      const html = await fetchHTML(url);
+      const $ = cheerio.load(html);
+      $('a[href*="navoid="]').each((_, a) => {
+        const text = normalizeText($(a).text());
+        const href = String($(a).attr("href") || "");
+        const match = href.match(/navoid=(\d+)/);
+        if (!match) return;
+        const id = Number(match[1]);
+        if (!id) return;
+        if (/programs?\s+of\s+study/i.test(text) || /\(a-z\)/i.test(text) || /programs/i.test(text)) {
+          navIds.add(id);
+        }
+      });
+    } catch {
+      // ignore fetch failures, fallback to default
+    }
+  }
+
+  return Array.from(navIds);
+}
+
+function extractProgramsFromIndex(html) {
+  const $ = cheerio.load(html);
+  const programs = [];
+  $('a[href*="preview_program.php"]').each((_, a) => {
+    const title = String($(a).text() || "").trim();
+    const canonical = canonicalProgramName(title);
+    if (!canonical) return;
+    const href = String($(a).attr("href") || "");
+    const url = absoluteCatalogUrl(href);
+    if (url) programs.push({ name: title, canonical, url });
+  });
+  return programs;
+}
+
+function absoluteCatalogUrl(href) {
+  if (!href) return null;
+  if (/^https?:\/\//i.test(href)) return href;
+  return `${CATALOG_HOST}/${href.replace(/^\//, "")}`;
 }
