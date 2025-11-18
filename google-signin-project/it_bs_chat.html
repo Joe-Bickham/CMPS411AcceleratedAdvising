@@ -369,7 +369,12 @@
           addMsg('🤖 Claude is analyzing your question...', false);
           const response = await fetch('/api/claude/advice', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question, courseData: MODEL, completedCourses: Array.from(completed) })
+            body: JSON.stringify({
+              question,
+              // Pass full course data including descriptions/prereqs/credits
+              courseData: MODEL,
+              completedCourses: Array.from(completed)
+            })
           });
           const data = await response.json();
           if (data.success) return {
@@ -483,7 +488,7 @@
         if (text.length > 20 || /plan|should I|when can|how many|what if|best|order/i.test(text)) {
           return await queryClaudeAI(text);
         }
-        return {type:'help', text:'Try: "prereqs for CMPS 3900", "can I take CMPS 3XXX?", "create timeline", or ask any academic planning question!'};
+          return {type:'help', text:'Try: "prereqs for CMPS 3900", "can I take CMPS 3XXX?", "create timeline", or ask any academic planning question! I can see titles, credits, prereqs, and descriptions from the live catalog.'};
       }
 
       async function submit(){

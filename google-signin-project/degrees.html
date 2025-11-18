@@ -101,7 +101,7 @@
       
       <div class="button-list" style="margin-top: 20px;">
         <button class="degree-btn" id="back-btn" style="background: #6c757d; font-size: 16px; padding: 12px 20px;">
-          ← Back to Department Selection
+          Back to Department Selection
         </button>
       </div>
     </div>
@@ -122,16 +122,12 @@
     const CHAT_PAGE = 'it_bs_chat.html';
     const DEPT_PAGE = 'department-selection.html';
     const COMM_PAGE = 'comm_bs_chat.html';
-<<<<<<< Updated upstream
     const CJ_PAGE = 'cj_bs_chat.html';
-=======
 
     const PROGRAM_PAGE_MAP = {
       'it-bs': { page: CHAT_PAGE, storage: 'it-bs-2024-25' },
       'comm-bs': { page: COMM_PAGE, storage: 'comm-bs-2024-25' }
     };
-
->>>>>>> Stashed changes
     function go(relPath){
       const url = new URL(relPath, window.location.href).toString();
       window.location.assign(url);
@@ -298,7 +294,7 @@
     loadLivePrograms();
 
     // Normalize back button label (in case of stray escape chars)
-    try { document.getElementById('back-btn').textContent = '← Back to Department Selection'; } catch {}
+    try { document.getElementById('back-btn').textContent = 'Back to Department Selection'; } catch {}
     // Back button functionality
     document.getElementById('back-btn').addEventListener('click', () => {
       go(DEPT_PAGE);

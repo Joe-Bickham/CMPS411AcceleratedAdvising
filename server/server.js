@@ -33,16 +33,14 @@ app.use(express.static(FRONT_DIR));
 // local data
 const DATA_DIR = path.join(__dirname, "data");
 const CORE_FILE = path.join(DATA_DIR, "core-gened.json");
-<<<<<<< Updated upstream
 const CJ_FILE = path.join(DATA_DIR, "cj-bs-catalog.json");
-=======
 const PROGRAM_INDEX_FILE = path.join(DATA_DIR, "programs-index.json");
 
 const PROGRAM_FALLBACKS = {
   "it-bs": "it-bs-catalog.json",
-  "comm-bs": "comm-bs-catalog.json"
+  "comm-bs": "comm-bs-catalog.json",
+  "cj-bs": "cj-bs-catalog.json"
 };
->>>>>>> Stashed changes
 
 // helper to read JSON
 function readJson(p) {
@@ -164,9 +162,10 @@ app.get("/api/catalog/programs", async (req, res) => {
 // GET IT catalog (optionally ?year=YYYY-YYYY)
 app.get("/api/catalog/it-bs", async (req, res) => {
   try {
+    const refresh = req.query.refresh === "1";
     // Try to get from web scraper first
     const programKey = "it-bs";
-    const catalogData = await loadCatalog(programKey);
+    const catalogData = await loadCatalog(programKey, { force: refresh });
     if (!catalogData) throw new Error("No catalog data available");
     
     const { program, years } = catalogData;
@@ -193,23 +192,18 @@ app.get("/api/catalog/it-bs", async (req, res) => {
 // GET Communication catalog
 app.get("/api/catalog/comm-bs", async (req, res) => {
   try {
-<<<<<<< HEAD
-    // Try to get from web scraper first
+    const refresh = req.query.refresh === "1";
     const programKey = "comm-bs";
-    const catalogData = await loadCatalog(programKey);
+    const catalogData = await loadCatalog(programKey, { force: refresh });
     if (!catalogData) throw new Error("No catalog data available");
-    
-    const { program, courses } = catalogData;
-    
-=======
-    const COMM_FILE = path.join(DATA_DIR, "comm-bs-catalog.json");
-    const raw = readJson(COMM_FILE);
-    const { program, courses } = raw;
 
->>>>>>> new-criminal-justice-page
+    const { program, courses, years, groups } = catalogData;
+    const courseList = courses && courses.length ? courses : flattenYears(years);
+
     res.json({
       program: program || {},
-      courses: courses || [],
+      courses: dedupeByCode(courseList),
+      groups: groups || [],
       mode: catalogData._source === "web" ? "dynamic" : "snapshot",
       source: catalogData._source || "unknown"
     });
@@ -336,55 +330,18 @@ app.post("/api/claude/degree-specific", async (req, res) => {
     
     // Load appropriate catalog based on program
     let catalogData = {};
-<<<<<<< HEAD
     let programSlug = '';
     
     if (programKey === 'it-bs-2024-25' || programKey === 'it-bs') {
       programSlug = 'it-bs';
     } else if (programKey === 'comm-bs-2024-25' || programKey === 'comm-bs') {
       programSlug = 'comm-bs';
+    } else if (programKey === 'cj-bs-2024-25' || programKey === 'cj-bs') {
+      programSlug = 'cj-bs';
     }
     
     if (programSlug) {
-<<<<<<< Updated upstream
-      // Try to get from cache first
-      const cacheKey = `model:${programSlug}`;
-      catalogData = getCache(cacheKey);
-      
-      if (!catalogData) {
-        try {
-          // Try to get from web
-          const url = await resolveLatestCatalogUrl(programSlug);
-          catalogData = await scrapeCatalogFromUrl(url);
-          setCache(cacheKey, catalogData, 6 * 60 * 60 * 1000); // Cache for 6 hours
-          console.log(`Loaded ${programSlug} catalog from web for Claude AI`);
-        } catch (webError) {
-          console.warn(`Failed to load ${programSlug} catalog from web:`, webError.message);
-          // Fallback to local file
-          try {
-            const filePath = path.join(DATA_DIR, `${programSlug.replace('-', '-')}-catalog.json`);
-            catalogData = readJson(filePath);
-            console.log(`Loaded ${programSlug} catalog from local file for Claude AI`);
-          } catch (fileError) {
-            console.log('Catalog not found, proceeding with limited data');
-          }
-        }
-=======
-    try {
-      if (programKey === 'it-bs-2024-25') {
-        const itData = readJson(path.join(DATA_DIR, "it-bs-catalog.json"));
-        catalogData = itData;
-      } else if (programKey === 'comm-bs-2024-25') {
-        const commData = readJson(path.join(DATA_DIR, "comm-bs-catalog.json"));
-        catalogData = commData;
-      } else if (programKey === 'cj-bs-2024-25') {
-        const cjData = readJson(path.join(DATA_DIR, "cj-bs-catalog.json"));
-        catalogData = cjData;
->>>>>>> new-criminal-justice-page
-      }
-=======
       catalogData = await loadCatalog(programSlug);
->>>>>>> Stashed changes
     }
     
     const advice = await getAcademicAdvice(question, catalogData, [], degreeProgram);
@@ -451,9 +408,5 @@ setInterval(async () => {
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Catalog backend with Claude AI on http://localhost:${PORT}`);
-<<<<<<< HEAD
   console.log(`Using web scraper for dynamic catalog data when available`);
 });
-=======
-});
->>>>>>> new-criminal-justice-page

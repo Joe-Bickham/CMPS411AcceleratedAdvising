@@ -1,4 +1,5 @@
 import re
+import html
 from urllib.parse import urljoin
 
 import scrapy
@@ -7,9 +8,10 @@ CATALOG_HOST = "https://catalog.southeastern.edu"
 PROGRAM_RE = re.compile(r"(programs?\s+of\s+study|\(a-z\)|programs)", re.I)
 YEAR_RE = re.compile(r"\b(20\d{2})\s?[-–]{1,2}\s?(20\d{2})\b")
 COURSE_RE = re.compile(r"\b([A-Z]{3,5})\s?-?\s?(\d{3,4}[A-Z]?)\b")
-PREREQ_RE = re.compile(r"Prereq(?:uisite)?s?:\s*(.+)", re.I)
+PREREQ_RE = re.compile(r"Prereq(?:uisite)?(?:\(s\))?:\s*(.+)", re.I)
 CREDITS_PAREN_RE = re.compile(r"\((\d{1,2})\s*(?:hrs?|hours?|credits?)\)", re.I)
 CREDITS_INLINE_RE = re.compile(r"\b(\d{1,2})\s*(?:credit|credits|hrs?|hours?)\b", re.I)
+SHOW_COURSE_RE = re.compile(r"showCourse\('(?P<catoid>\d+)'\s*,\s*'(?P<coid>\d+)'", re.I)
 
 
 def clean_text(value: str) -> str:
@@ -89,6 +91,8 @@ class ProgramsSpider(scrapy.Spider):
         self.max_programs = int(max_programs) if max_programs and max_programs.isdigit() else None
         self._program_urls = set()
         self._yield_count = 0
+        # Track pending course-detail requests per program so we can emit once complete
+        self._pending_programs = {}
 
     def start_requests(self):
         landing_urls = [
@@ -177,9 +181,110 @@ class ProgramsSpider(scrapy.Spider):
         title = clean_text(response.css("h1::text").get()) or program_meta["name"]
         program_meta["catalog_year"] = detected_year
         program_meta["name"] = title
-        courses = self.extract_courses(lines)
-        self._yield_count += 1
-        yield self.build_program_item(program_meta, courses, response.url)
+        # Try to gather course detail links (preview_course pages expose prereqs/credits)
+        course_links = []
+        # New style: onclick="showCourse('5','17895', ...)"
+        for a in response.css('a[onclick*="showCourse"]'):
+            onclick = a.attrib.get("onclick", "")
+            m = SHOW_COURSE_RE.search(onclick)
+            if not m:
+                continue
+            catoid = m.group("catoid")
+            coid = m.group("coid")
+            course_links.append(f"{CATALOG_HOST}/preview_course_nopop.php?catoid={catoid}&coid={coid}")
+
+        # Legacy preview_course links if present
+        legacy_links = response.css('a[href*="preview_course"]::attr(href)').getall()
+        course_links.extend(urljoin(response.url, href) for href in legacy_links)
+
+        if self.include_courses and course_links:
+            program_key = self.requested_program_key or slugify(program_meta.get("canonical") or program_meta["name"])
+            # Set up pending tracker
+            self._pending_programs[program_key] = {
+                "meta": program_meta,
+                "courses": [],
+                "expected": len(course_links),
+                "source_url": response.url,
+            }
+            for href in course_links:
+                yield response.follow(
+                    href,
+                    callback=self.parse_course_detail,
+                    cb_kwargs={"program_key": program_key},
+                    dont_filter=True,
+                )
+        else:
+            # Fallback to legacy text scraping if no links were found
+            courses = self.extract_courses(lines)
+            self._yield_count += 1
+            yield self.build_program_item(program_meta, courses, response.url)
+
+    def parse_course_detail(self, response, program_key: str):
+        bucket = self._pending_programs.get(program_key)
+        if not bucket:
+            return
+
+        # Title line often in <h1> like "MATH 1630 - APPLIED CALCULUS"
+        header = clean_text(response.css("h1::text").get() or "")
+        code = ""
+        title = ""
+        if " - " in header:
+            code_part, title_part = header.split(" - ", 1)
+            code = code_part.strip()
+            title = title_part.strip()
+        else:
+            # fallback: find first course code in header
+            match = COURSE_RE.search(header)
+            if match:
+                code = f"{match.group(1).upper()} {match.group(2)}"
+                title = header[match.end():].strip(" -\u00a0")
+
+        # Credits + prereqs from full text (strip tags to avoid missed nodes)
+        raw_html = response.text
+        tagless = html.unescape(re.sub(r"<[^>]+>", " ", raw_html))
+        full_text = clean_text(tagless)
+        credits = detect_credits(full_text)
+
+        # Description: text between Credit Hour(s) and the next labelled section
+        description = ""
+        desc_match = re.search(
+            r"Credit Hour\(s\)\s*(.+?)(?:Prereq(?:uisite)?|\bRestrictions:|\bOffered:|\bCourse Component:|$)",
+            full_text,
+            flags=re.I,
+        )
+        if desc_match:
+            description = desc_match.group(1).strip(" :;-.")
+
+        prereqs = []
+        prereq_match = re.search(
+            r"Prereq(?:uisite)?(?:\(s\))?:\s*(.+?)(?:Restrictions:|Offered:|Course Component:|$)",
+            full_text,
+            flags=re.I | re.S,
+        )
+        if prereq_match:
+            raw = prereq_match.group(1)
+            pieces = re.split(r",|;|\band\b|\bor\b", raw, flags=re.I)
+            for piece in pieces:
+                cm = COURSE_RE.search(piece.strip())
+                if cm:
+                    prereqs.append(f"{cm.group(1).upper()} {cm.group(2)}")
+
+        if code:
+            bucket["courses"].append(
+                {
+                    "code": code,
+                    "title": title or "(title unavailable)",
+                    "credits": credits,
+                    "prereqs": prereqs,
+                    "description": description or None,
+                }
+            )
+
+        # If we've collected all course details, emit the program item
+        if len(bucket["courses"]) >= bucket["expected"]:
+            self._pending_programs.pop(program_key, None)
+            self._yield_count += 1
+            yield self.build_program_item(bucket["meta"], bucket["courses"], bucket.get("source_url"))
 
     def extract_courses(self, lines):
         courses = []
