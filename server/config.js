@@ -19,5 +19,15 @@ export const PROGRAMS = {
     hints: ["information technology", "it", "bs"],
     // optional hardcoded candidates beyond BASE.seeds
     candidates: []
+  },
+  "comm-bs": {
+    name: "Communication, BS",
+    hints: ["communication", "comm", "bs"],
+    candidates: []
+  },
+  "cj-bs": {
+    name: "Criminal Justice, BS",
+    hints: ["criminal justice", "cj", "bs"],
+    candidates: []
   }
 };

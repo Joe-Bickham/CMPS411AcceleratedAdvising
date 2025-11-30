@@ -15,8 +15,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 
 async function signInWithGoogle() {
   console.log('[auth] signInWithGoogle clicked');
-  // Build an absolute redirect URL based on current path, avoiding hard-coded folders
-  const redirectTo = new URL('department-selection.html', window.location.href).toString();
+  // Redirect directly to chat page instead of department selection
+  const redirectTo = new URL('chat.html', window.location.href).toString();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo, skipBrowserRedirect: true }
@@ -39,5 +39,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   // expose for debugging if needed
   window.signInWithGoogle = signInWithGoogle;
   const { data: { session } } = await supabase.auth.getSession();
-  if (session) window.location.href = 'department-selection.html';
+  if (session) window.location.href = 'chat.html';
 });

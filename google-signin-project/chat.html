@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Academic Advisor - Accelerated Advising</title>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    import { requireSession } from './auth.js';
+    const supabase = createClient(
+      'https://cpkuxbounjvdaptzurmq.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwa3V4Ym91bmp2ZGFwdHp1cm1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NTAzNjMsImV4cCI6MjA3ODAyNjM2M30.SDH0n2T5-3LATftVndaeS_4PG6kBHVwOYVqXD55hzv8',
+      {
+        auth: {
+          storage: window.sessionStorage,
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+        },
+      }
+    );
+    try {
+      await requireSession(supabase, 'index.html', 7000);
+      const { data: { user } } = await supabase.auth.getUser();
+      document.addEventListener('DOMContentLoaded', () => {
+        const info = document.getElementById('user-info');
+        if (info && user) info.textContent = user.email || 'Signed in';
+        const btn = document.getElementById('signout');
+        if (btn) btn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          await supabase.auth.signOut();
+          window.location.href = 'index.html';
+        }, { once:true });
+      });
+    } catch {}
+  </script>
+  <style>
+    :root{
+      --green:#006747; --emerald:#0c8a63; --gold:#fdb913;
+      --ink:#eaf8f5; --muted:rgba(255,255,255,.85);
+      --panel:rgba(255,255,255,.06); --panel-b:rgba(255,255,255,.12);
+      --card:#0f3a31; --card2:#113e34;
+    }
+    body{
+      margin:0; color:var(--ink); font:16px/1.5 system-ui, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(1200px 800px at 20% -10%, #0e7a62 0%, transparent 60%),
+        radial-gradient(1200px 800px at 80% 10%, #0b493b 0%, transparent 60%),
+        linear-gradient(180deg, #0e3a32 0%, #0b2a34 55%, #0a1f2d 100%);
+      min-height:100dvh; display:flex; flex-direction:column;
+    }
+    .top-bar{
+      display:flex; justify-content:space-between; align-items:center;
+      max-width:1200px; width:100%; margin:20px auto 10px; padding:0 20px;
+    }
+    .brand{ display:flex; align-items:center; gap:12px; font-weight:800; font-size:20px; line-height:1; }
+    :root{ --logo-size: 75px; --logo-zoom: 150%; --logo-pos-x: 50%; --logo-pos-y: 38%; }
+    .logo-wrap{ width:var(--logo-size); height:var(--logo-size); border-radius:10px; overflow:hidden; position:relative; background: linear-gradient(180deg, #0d463b, #082e26); box-shadow: 0 10px 26px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.06); }
+    .logo-wrap::after{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); background: linear-gradient(to bottom, rgba(255,255,255,.06), rgba(255,255,255,0) 40%); }
+    .logo-bg{ position:absolute; inset:0; background-image:url("./assets/kaizenexus_logo.svg"); background-repeat:no-repeat; background-size: var(--logo-zoom); background-position: var(--logo-pos-x) var(--logo-pos-y); }
+    .user-controls{display:flex; align-items:center; gap:12px;}
+    .user-meta{opacity:.9; font-size:14px; white-space:nowrap;}
+    .signout{background:#d94b4b; color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:700; cursor:pointer;}
+    .signout:hover{filter:brightness(1.05);}    
+    .prog-pill{display:inline-block; margin-left:10px; font-size:12px; font-weight:800; color:#072b22;
+      background:#e8fff8; padding:4px 10px; border-radius:999px; border:1px solid rgba(0,0,0,.1);}    
+    .wrap{flex:1; display:flex; justify-content:center; align-items:flex-start; padding:12px 20px 32px;}
+    .app{
+      width:100%; max-width:1200px;
+      background:var(--panel); border:1px solid var(--panel-b); border-radius:16px;
+      box-shadow:0 18px 48px rgba(0,0,0,.35); backdrop-filter:blur(4px);
+      padding:16px;
+    }
+    .panel{background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); border-radius:14px; overflow:hidden;}
+    .head{padding:12px 14px; background:var(--card); border-bottom:1px solid rgba(255,255,255,.08); font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:8px;}
+    .body{background:var(--card2); min-height:560px;}
+    .composer{display:flex; gap:8px; padding:12px; background:var(--card); border-top:1px solid rgba(255,255,255,.08);}    
+    .input{flex:1; background:#06241e; color:var(--ink); border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:10px 12px; outline:none;}
+    .btn{background:var(--green); color:#072b22; border:none; border-radius:10px; padding:10px 14px; font-weight:800; cursor:pointer;}
+    .btn:hover{background:var(--emerald);}
+    .btn:disabled{opacity:0.5; cursor:not-allowed;}
+    .chat-body{height:560px; overflow:auto; padding:14px;}
+    .msg{background:#e8fff8; color:#06342d; padding:10px 12px; border-radius:10px; margin:8px 0; max-width:720px; white-space:pre-wrap;}
+    .me{background:#156957; color:#eafff9; margin-left:auto;}
+    
+    /* Grid layout for chat + sidebar */
+    .grid{display:grid; grid-template-columns:1.2fr 0.8fr; gap:16px;}
+    
+    /* Student Information Section */
+    .student-info-section{background:#0a2e27; border:1px solid rgba(255,255,255,.15); border-radius:10px; padding:12px; margin:10px 12px; font-size:14px;}
+    .student-info-section h3{margin:0 0 12px; color:var(--gold); font-size:16px; font-weight:700;}
+    .form-group{margin-bottom:12px;}
+    .form-group label{display:block; margin-bottom:4px; font-weight:600; color:var(--ink); font-size:13px;}
+    .form-input{width:100%; background:#06241e; color:var(--ink); border:1px solid rgba(255,255,255,.12); border-radius:6px; padding:8px 10px; font-size:13px; outline:none; box-sizing:border-box;}
+    .form-input:focus{border-color:var(--emerald); box-shadow:0 0 0 2px rgba(12,138,99,.2);}
+    .form-textarea{min-height:60px; resize:vertical; font-family:inherit;}
+    .btn-secondary{background:#073a2f; color:var(--ink); border:1px solid rgba(255,255,255,.15); border-radius:8px; padding:8px 12px; font-weight:600; cursor:pointer; font-size:13px; margin-right:8px;}
+    .btn-secondary:hover{background:#0a4d3f; border-color:var(--emerald);}
+    .btn-download{background:var(--gold); color:#072b22; border:none; border-radius:8px; padding:8px 12px; font-weight:700; cursor:pointer; font-size:13px;}
+    .btn-download:hover{filter:brightness(1.1);}
+    .analysis-result{background:#0f3a31; border:1px solid rgba(255,255,255,.08); border-radius:8px; padding:10px; margin-top:10px; white-space:pre-wrap; font-size:13px; line-height:1.4; max-height:200px; overflow-y:auto;}
+    .button-group{display:flex; gap:8px; margin-top:12px;}
+    .notes{background:#0a2e27; border:1px dashed rgba(255,255,255,.25); border-radius:10px; padding:10px 12px; margin:10px 12px; font-size:14px;}
+    .small{opacity:.9; font-size:13px;}
+    
+    @media (max-width:768px){
+      .app{padding:12px;}
+      .chat-body{height:400px;}
+      .grid{grid-template-columns:1fr;}
+      .student-info-section{margin:10px 8px; padding:10px;}
+      .button-group{flex-direction:column;}
+      .btn-secondary, .btn-download{width:100%; margin-right:0; margin-bottom:8px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="brand">
+      <span class="logo-wrap"><span class="logo-bg" aria-label="KaizeNexus logo"></span></span>
+      Accelerated Advising
+      <span class="prog-pill" id="prog-pill">AI Advisor</span>
+    </div>
+    <div class="user-controls">
+      <div class="user-meta" id="user-info">Not signed in</div>
+      <button class="signout" id="signout">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="app">
+      <div class="grid">
+        <!-- Chat Panel -->
+        <section class="panel">
+          <div class="head">
+            <span>AI Academic Advisor</span>
+            <span style="font-size:11px; opacity:0.7; margin-left:8px;">powered by Claude Sonnet</span>
+          </div>
+          <div class="body">
+            <div id="chat" class="chat-body"></div>
+            <div class="composer">
+              <input id="input" class="input" type="text" placeholder='Type your message...' />
+              <button id="send" class="btn">Send</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Student Information Sidebar -->
+        <aside class="panel">
+          <div class="head">Student Information</div>
+          <div class="body" style="min-height:560px;">
+            <div class="notes">
+              <div><strong>Program Information</strong></div>
+              <div class="small" id="program-info">Select a curriculum to see program details</div>
+            </div>
+            
+            <div class="student-info-section">
+              <h3>Academic Credentials</h3>
+              <div class="form-group">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                  <input type="checkbox" id="honors-student" style="width:auto; cursor:pointer;">
+                  <span>Honors Student</span>
+                </label>
+              </div>
+              <div class="form-group">
+                <label>ACT Scores</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px;">
+                  <div>
+                    <label for="act-english" style="font-size:12px; margin-bottom:2px;">English</label>
+                    <input type="number" id="act-english" class="form-input" placeholder="English" min="1" max="36">
+                  </div>
+                  <div>
+                    <label for="act-reading" style="font-size:12px; margin-bottom:2px;">Reading</label>
+                    <input type="number" id="act-reading" class="form-input" placeholder="Reading" min="1" max="36">
+                  </div>
+                  <div>
+                    <label for="act-math" style="font-size:12px; margin-bottom:2px;">Mathematics</label>
+                    <input type="number" id="act-math" class="form-input" placeholder="Math" min="1" max="36">
+                  </div>
+                  <div>
+                    <label for="act-science" style="font-size:12px; margin-bottom:2px;">Science</label>
+                    <input type="number" id="act-science" class="form-input" placeholder="Science" min="1" max="36">
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="transfer-credits">Transfer Credits</label>
+                <textarea id="transfer-credits" class="form-input form-textarea" placeholder="List your transfer courses (e.g., ENGL 1010 - English Composition)"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="dual-enrollment">Dual Enrollment Credits</label>
+                <textarea id="dual-enrollment" class="form-input form-textarea" placeholder="List your dual enrollment courses"></textarea>
+              </div>
+              <div class="button-group">
+                <button id="analyze-credits" class="btn-secondary">Analyze Credits</button>
+                <button id="download-info" class="btn-download">Download Info</button>
+              </div>
+              <div id="credit-analysis" class="analysis-result" style="display:none;"></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      let MODEL = { program:null, courses:[], groups:[] };
+      let currentCurriculum = '';
+      let conversationHistory = [];
+      let awaitingCurriculum = true;
+      let studentInfo = {
+        isHonors: false,
+        actScores: {},
+        transferCredits: '',
+        dualEnrollment: '',
+        analyzed: false
+      };
+      
+      const $ = q => document.querySelector(q);
+      const chat = $('#chat');
+      const input = $('#input');
+      const send = $('#send');
+      const progPill = $('#prog-pill');
+
+      function addMsg(text, me=false){
+        const div = document.createElement('div');
+        div.className = `msg${me?' me':''}`;
+        div.textContent = text;
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+      }
+
+      async function loadCurriculum(curriculum) {
+        try {
+          // Clean up the curriculum name - remove degree types and extra words
+          let cleanName = curriculum
+            .toLowerCase()
+            .replace(/\s+(bs|ba|ms|ma|phd|degree|program)$/i, '') // Remove degree suffixes
+            .replace(/\s+concentration$/i, '') // Remove "concentration"
+            .replace(/\s+track$/i, '') // Remove "track"
+            .trim();
+          
+          console.log(`[loadCurriculum] Original: "${curriculum}", Cleaned: "${cleanName}"`);
+          
+          const response = await fetch(`/api/catalog/${encodeURIComponent(cleanName)}`);
+          const data = await response.json();
+          
+          if (!response.ok) {
+            return {
+              success: false,
+              error: data.message || data.error || 'Curriculum not found',
+              curriculum: curriculum
+            };
+          }
+          
+          MODEL = data;
+          currentCurriculum = cleanName;
+          awaitingCurriculum = false;
+          
+          progPill.textContent = `${data.program?.name || curriculum} • ${data.program?.catalog_year || 'Current'}`;
+          
+          // Update program info in sidebar
+          const programInfo = $('#program-info');
+          if (programInfo && data.program) {
+            programInfo.innerHTML = `
+              <strong>${data.program.name || curriculum}</strong><br>
+              Catalog Year: ${data.program.catalog_year || 'Current'}<br>
+              Total Hours: ${data.program.total_hours || 120}<br>
+              Min Grade (Major): ${data.program.min_grade_major || 'C'}<br>
+              Courses Available: ${data.courses?.length || 0}
+            `;
+          }
+          
+          return {
+            success: true,
+            data: data,
+            curriculum: curriculum,
+            programName: data.program?.name || curriculum,
+            courseCount: data.courses?.length || 0,
+            source: data.source === 'web' ? 'university website' : 'catalog database'
+          };
+        } catch (error) {
+          console.error('Failed to load curriculum:', error);
+          return {
+            success: false,
+            error: error.message || 'Failed to load curriculum',
+            curriculum: curriculum
+          };
+        }
+      }
+
+      async function queryClaudeAI(question, systemContext = null) {
+        try {
+          console.log('[queryClaudeAI] Starting request with question:', question);
+          addMsg('🤖 Thinking...', false);
+          
+          let finalQuestion = question;
+          if (systemContext) {
+            finalQuestion = `[SYSTEM CONTEXT: ${systemContext}]\n\n${question}`;
+          }
+          
+          // Add student info context if analyzed
+          if (studentInfo.analyzed) {
+            const studentContext = buildStudentContext();
+            finalQuestion = `[STUDENT INFORMATION: ${studentContext}]\n\n${finalQuestion}`;
+          }
+          
+          console.log('[queryClaudeAI] Sending request to /api/claude/advice');
+          const response = await fetch('/api/claude/advice', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              question: finalQuestion,
+              courseData: MODEL,
+              completedCourses: [],
+              conversationHistory: conversationHistory
+            })
+          });
+          
+          console.log('[queryClaudeAI] Response status:', response.status);
+          const data = await response.json();
+          console.log('[queryClaudeAI] Response data:', data);
+          
+          const lastMsg = chat.lastChild;
+          if (lastMsg && lastMsg.textContent.includes('Thinking')) {
+            chat.removeChild(lastMsg);
+          }
+          
+          if (data.success) {
+            conversationHistory.push({ role: 'user', content: question });
+            conversationHistory.push({ role: 'assistant', content: data.advice });
+            
+            if (conversationHistory.length > 20) {
+              conversationHistory = conversationHistory.slice(-20);
+            }
+            
+            return { type: 'claude', text: data.advice };
+          }
+          throw new Error(data.error || 'Unknown error');
+        } catch (error) {
+          console.error('[queryClaudeAI] Error:', error);
+          const lastMsg = chat.lastChild;
+          if (lastMsg && lastMsg.textContent.includes('Thinking')) {
+            chat.removeChild(lastMsg);
+          }
+          return { type: 'error', text: `Error: ${error.message}. Please check the console for details.` };
+        }
+      }
+
+      function buildStudentContext() {
+        let context = [];
+        
+        if (studentInfo.isHonors) {
+          context.push('Student is in the Honors Program');
+        }
+        
+        if (Object.keys(studentInfo.actScores).length > 0) {
+          const scores = Object.entries(studentInfo.actScores)
+            .map(([subject, score]) => `${subject}: ${score}`)
+            .join(', ');
+          context.push(`ACT Scores: ${scores}`);
+        }
+        
+        if (studentInfo.transferCredits) {
+          context.push(`Transfer Credits: ${studentInfo.transferCredits}`);
+        }
+        
+        if (studentInfo.dualEnrollment) {
+          context.push(`Dual Enrollment: ${studentInfo.dualEnrollment}`);
+        }
+        
+        return context.join(' | ');
+      }
+
+      async function submit(){
+        try {
+          const text = (input.value||'').trim();
+          if (!text) return;
+          
+          console.log('[submit] User input:', text);
+          addMsg(text, true);
+          input.value = '';
+          input.disabled = true;
+          send.disabled = true;
+          
+          if (awaitingCurriculum) {
+            console.log('[submit] Awaiting curriculum, checking message type');
+            
+            // Check if this is a question (contains question words or ends with ?)
+            const isQuestion = /\?|what|how|when|where|why|which|can|should|do|does|is|are/i.test(text);
+            
+            // Check if it's a simple greeting
+            const isGreeting = /^(hi|hey|hello|sup|yo|greetings)$/i.test(text.trim());
+            
+            // Check if it looks like a curriculum name (simple noun phrase, no question words)
+            const looksLikeCurriculum = !isQuestion && !isGreeting && text.length > 3;
+            
+            if (isQuestion) {
+              console.log('[submit] Treating as general question');
+              // It's a question - let AI answer it and remind about curriculum selection
+              const systemContext = 'The user asked a question but hasn\'t selected a curriculum yet. Answer their question helpfully, then remind them they can select a specific curriculum for more detailed advising. Be conversational and helpful.';
+              const aiResponse = await queryClaudeAI(text, systemContext);
+              if (aiResponse.type === 'claude') {
+                addMsg(`🤖 ${aiResponse.text}`, false);
+              } else if (aiResponse.type === 'error') {
+                addMsg(aiResponse.text, false);
+              }
+            } else if (looksLikeCurriculum) {
+              console.log('[submit] Treating as curriculum name');
+              // Try to load as curriculum
+              const result = await loadCurriculum(text.toLowerCase());
+              
+              if (result.success) {
+                console.log('[submit] Curriculum loaded successfully, MODEL updated');
+                console.log('[submit] MODEL now has', MODEL.courses?.length, 'courses');
+                // Curriculum loaded successfully - just confirm to user
+                const confirmMsg = `Great! I've loaded the ${result.programName} curriculum with ${result.courseCount} courses. How can I help you with your academic planning?`;
+                addMsg(`🤖 ${confirmMsg}`, false);
+              } else {
+                console.log('[submit] Curriculum load failed');
+                // Failed to load - let AI handle it
+                const systemContext = `The user said "${text}" which I tried to load as a curriculum but it wasn't found. Error: ${result.error}. Please respond naturally - if it seems like they were asking a question, answer it. Otherwise, ask them to specify a curriculum name.`;
+                const aiResponse = await queryClaudeAI(text, systemContext);
+                if (aiResponse.type === 'claude') {
+                  addMsg(`🤖 ${aiResponse.text}`, false);
+                } else if (aiResponse.type === 'error') {
+                  addMsg(aiResponse.text, false);
+                }
+              }
+            } else {
+              console.log('[submit] Treating as greeting or general message');
+              // It's a greeting or general message
+              const systemContext = 'The user is greeting you or making a general statement. Please respond naturally as an AI academic advisor for Southeastern Louisiana University and ask which curriculum/degree program they would like to explore. Be friendly and conversational.';
+              const aiResponse = await queryClaudeAI(text, systemContext);
+              if (aiResponse.type === 'claude') {
+                addMsg(`🤖 ${aiResponse.text}`, false);
+              } else if (aiResponse.type === 'error') {
+                addMsg(aiResponse.text, false);
+              }
+            }
+          } else {
+            console.log('[submit] Normal query mode');
+            const response = await queryClaudeAI(text);
+            if (response.type === 'claude') {
+              addMsg(`🤖 ${response.text}`, false);
+            } else {
+              addMsg(response.text, false);
+            }
+          }
+          
+          input.disabled = false;
+          send.disabled = false;
+          input.focus();
+        } catch (error) {
+          console.error('[submit] Unexpected error:', error);
+          addMsg(`Error: ${error.message}`, false);
+          input.disabled = false;
+          send.disabled = false;
+        }
+      }
+
+      send.addEventListener('click', submit);
+      input.addEventListener('keydown', e => { if(e.key==='Enter') submit(); });
+      
+      // Student Information Features
+      const analyzeBtn = $('#analyze-credits');
+      const downloadBtn = $('#download-info');
+      const analysisResult = $('#credit-analysis');
+      
+      analyzeBtn.addEventListener('click', async () => {
+        const isHonors = $('#honors-student').checked;
+        const actEnglish = $('#act-english').value.trim();
+        const actReading = $('#act-reading').value.trim();
+        const actMath = $('#act-math').value.trim();
+        const actScience = $('#act-science').value.trim();
+        const transferCredits = $('#transfer-credits').value.trim();
+        const dualEnrollment = $('#dual-enrollment').value.trim();
+        
+        const hasActScores = actEnglish || actReading || actMath || actScience;
+        if (!hasActScores && !transferCredits && !dualEnrollment && !isHonors) {
+          analysisResult.style.display = 'block';
+          analysisResult.textContent = 'Please enter student information to analyze.';
+          return;
+        }
+        
+        // Store student info for future AI queries
+        studentInfo.isHonors = isHonors;
+        studentInfo.actScores = {};
+        if (actEnglish) studentInfo.actScores.English = actEnglish;
+        if (actReading) studentInfo.actScores.Reading = actReading;
+        if (actMath) studentInfo.actScores.Mathematics = actMath;
+        if (actScience) studentInfo.actScores.Science = actScience;
+        studentInfo.transferCredits = transferCredits;
+        studentInfo.dualEnrollment = dualEnrollment;
+        studentInfo.analyzed = true;
+        
+        const actScores = {};
+        if (actEnglish) actScores.english = actEnglish;
+        if (actReading) actScores.reading = actReading;
+        if (actMath) actScores.mathematics = actMath;
+        if (actScience) actScores.science = actScience;
+        
+        try {
+          analysisResult.style.display = 'block';
+          analysisResult.textContent = '🤖 Analyzing your credits...';
+          
+          const response = await fetch('/api/claude/credit-analysis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              actScores: Object.keys(actScores).length > 0 ? actScores : null,
+              transferCredits: transferCredits || '',
+              dualEnrollmentCredits: dualEnrollment || '',
+              courseData: MODEL,
+              degreeProgram: currentCurriculum,
+              isHonors: isHonors
+            })
+          });
+          
+          const data = await response.json();
+          if (data.success) {
+            analysisResult.textContent = `🤖 Credit Analysis:\n\n${data.analysis}`;
+            addMsg('✅ Student information saved! I will now use this information when answering your questions about prerequisites and course requirements.', false);
+          } else {
+            throw new Error(data.error || 'Analysis failed');
+          }
+        } catch (error) {
+          console.error('Credit analysis error:', error);
+          analysisResult.textContent = 'Credit analysis temporarily unavailable.';
+        }
+      });
+      
+      downloadBtn.addEventListener('click', () => {
+        const isHonors = $('#honors-student').checked;
+        const actEnglish = $('#act-english').value.trim();
+        const actReading = $('#act-reading').value.trim();
+        const actMath = $('#act-math').value.trim();
+        const actScience = $('#act-science').value.trim();
+        const transferCredits = $('#transfer-credits').value.trim();
+        const dualEnrollment = $('#dual-enrollment').value.trim();
+        const analysisText = analysisResult.style.display !== 'none' ? analysisResult.textContent : '';
+        
+        let content = `STUDENT INFORMATION - ${currentCurriculum || 'Academic Advising'}\n`;
+        content += '='.repeat(60) + '\n\n';
+        content += `Generated: ${new Date().toLocaleString()}\n\n`;
+        
+        if (isHonors) {
+          content += 'HONORS STUDENT: Yes\n\n';
+        }
+        
+        if (actEnglish || actReading || actMath || actScience) {
+          content += 'ACT SCORES:\n';
+          if (actEnglish) content += `  English: ${actEnglish}\n`;
+          if (actReading) content += `  Reading: ${actReading}\n`;
+          if (actMath) content += `  Mathematics: ${actMath}\n`;
+          if (actScience) content += `  Science: ${actScience}\n`;
+          content += '\n';
+        }
+        
+        if (transferCredits) {
+          content += `TRANSFER CREDITS:\n${transferCredits}\n\n`;
+        }
+        
+        if (dualEnrollment) {
+          content += `DUAL ENROLLMENT CREDITS:\n${dualEnrollment}\n\n`;
+        }
+        
+        if (analysisText && !analysisText.includes('unavailable')) {
+          content += `AI ANALYSIS:\n${analysisText}\n\n`;
+        }
+        
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `student-info-${new Date().toISOString().split('T')[0]}.txt`;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        
+        setTimeout(() => {
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 100);
+        }, 10);
+      });
+      
+      try{
+        const rawUser = localStorage.getItem('aa_user');
+        if(rawUser){
+          const u = JSON.parse(rawUser);
+          $('#user-info').textContent = (u && u.name && u.email) ? `${u.name} (${u.email})` : 'Signed in';
+        }
+      }catch{}
+      
+      $('#signout').addEventListener('click', ()=>{
+        try{
+          localStorage.removeItem('aa_user');
+          localStorage.removeItem('aa_program');
+          localStorage.removeItem('aa_department');
+        }catch{}
+        window.location.assign('index.html');
+      });
+    })();
+  </script>
+</body>
+</html>

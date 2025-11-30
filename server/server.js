@@ -121,7 +121,6 @@ app.get("/api/catalog/it-bs", async (req, res) => {
 // GET Communication catalog
 app.get("/api/catalog/comm-bs", async (req, res) => {
   try {
-<<<<<<< HEAD
     // Try to get from web scraper first
     const programKey = "comm-bs";
     const cacheKey = `model:${programKey}`;
@@ -147,12 +146,6 @@ app.get("/api/catalog/comm-bs", async (req, res) => {
     
     const { program, courses } = catalogData;
     
-=======
-    const COMM_FILE = path.join(DATA_DIR, "comm-bs-catalog.json");
-    const raw = readJson(COMM_FILE);
-    const { program, courses } = raw;
-
->>>>>>> new-criminal-justice-page
     res.json({
       program: program || {},
       courses: courses || [],
@@ -183,6 +176,97 @@ app.get("/api/catalog/cj-bs", (req, res) => {
   }
 });
 
+// Dynamic curriculum endpoint - loads ANY curriculum by discovering it from the web
+app.get("/api/catalog/:curriculum", async (req, res) => {
+  try {
+    const curriculumName = req.params.curriculum;
+    const normalized = curriculumName.toLowerCase().trim();
+    
+    // Create a temporary program key for this curriculum
+    const programKey = normalized.replace(/[^a-z0-9]+/g, '-');
+    const cacheKey = `model:${programKey}`;
+    
+    // Check cache first
+    let catalogData = getCache(cacheKey);
+    
+    if (!catalogData) {
+      try {
+        console.log(`Attempting to discover curriculum: ${curriculumName}`);
+        
+        // Try to discover the program URL dynamically
+        const url = await discoverLatestProgramUrl(programKey, "https://www.southeastern.edu/catalog/");
+        
+        if (!url) {
+          throw new Error('Program not found via discovery');
+        }
+        
+        // Scrape the discovered URL
+        catalogData = await scrapeCatalogFromUrl(url);
+        catalogData._source = "web";
+        catalogData.program = catalogData.program || {};
+        catalogData.program.name = catalogData.program.name || curriculumName;
+        
+        setCache(cacheKey, catalogData, 6 * 60 * 60 * 1000);
+        console.log(`Successfully loaded ${curriculumName} from web: ${url}`);
+        
+      } catch (webError) {
+        console.warn(`Failed to discover ${curriculumName} from web:`, webError.message);
+        
+        // Try known program keys as fallback
+        const knownMappings = {
+          'information-technology': 'it-bs',
+          'it': 'it-bs',
+          'information technology': 'it-bs',
+          'communication': 'comm-bs',
+          'comm': 'comm-bs',
+          'criminal-justice': 'cj-bs',
+          'cj': 'cj-bs',
+          'criminal justice': 'cj-bs'
+        };
+        
+        const knownKey = knownMappings[normalized];
+        
+        if (knownKey) {
+          // Try to load from local file as last resort
+          try {
+            const filePath = path.join(DATA_DIR, `${knownKey}-catalog.json`);
+            catalogData = readJson(filePath);
+            catalogData._source = "local";
+            console.log(`Loaded ${curriculumName} from local file: ${knownKey}`);
+          } catch (fileError) {
+            return res.status(404).json({
+              error: `Could not find curriculum: ${curriculumName}`,
+              message: 'Please check the curriculum name and try again. Make sure it matches a program offered by the university.'
+            });
+          }
+        } else {
+          return res.status(404).json({
+            error: `Could not find curriculum: ${curriculumName}`,
+            message: 'Please check the curriculum name and try again. Make sure it matches a program offered by the university.'
+          });
+        }
+      }
+    }
+    
+    const { program, courses, years, groups } = catalogData;
+    
+    res.json({
+      program: program || { name: curriculumName },
+      courses: courses || [],
+      years: years || {},
+      groups: groups || [],
+      mode: catalogData._source === "web" ? "dynamic" : "snapshot",
+      source: catalogData._source || "unknown"
+    });
+  } catch (e) {
+    console.error('Curriculum loading error:', e);
+    res.status(500).json({
+      error: "Failed to load curriculum",
+      message: "An error occurred while trying to load the curriculum data. Please try again."
+    });
+  }
+});
+
 // GET Core/GenEd
 app.get("/api/core", (req, res) => {
   try {
@@ -194,16 +278,22 @@ app.get("/api/core", (req, res) => {
   }
 });
 
-// Claude AI endpoints
+// Claude AI endpoints with conversation history support
 app.post("/api/claude/advice", async (req, res) => {
   try {
-    const { question, courseData, completedCourses } = req.body;
+    const { question, courseData, completedCourses, conversationHistory } = req.body;
     
     if (!question) {
       return res.status(400).json({ error: 'Question is required' });
     }
     
-    const advice = await getAcademicAdvice(question, courseData || {}, completedCourses || []);
+    const advice = await getAcademicAdvice(
+      question,
+      courseData || {},
+      completedCourses || [],
+      null,
+      conversationHistory || []
+    );
     
     res.json({
       success: true,
@@ -271,10 +361,10 @@ app.post("/api/claude/recommendations", async (req, res) => {
   }
 });
 
-// Degree-specific Claude AI endpoint
+// Degree-specific Claude AI endpoint with conversation history
 app.post("/api/claude/degree-specific", async (req, res) => {
   try {
-    const { question, degreeProgram, programKey } = req.body;
+    const { question, degreeProgram, programKey, conversationHistory } = req.body;
     
     if (!question) {
       return res.status(400).json({ error: 'Question is required' });
@@ -282,13 +372,14 @@ app.post("/api/claude/degree-specific", async (req, res) => {
     
     // Load appropriate catalog based on program
     let catalogData = {};
-<<<<<<< HEAD
     let programSlug = '';
     
     if (programKey === 'it-bs-2024-25' || programKey === 'it-bs') {
       programSlug = 'it-bs';
     } else if (programKey === 'comm-bs-2024-25' || programKey === 'comm-bs') {
       programSlug = 'comm-bs';
+    } else if (programKey === 'cj-bs-2024-25' || programKey === 'cj-bs') {
+      programSlug = 'cj-bs';
     }
     
     if (programSlug) {
@@ -307,29 +398,24 @@ app.post("/api/claude/degree-specific", async (req, res) => {
           console.warn(`Failed to load ${programSlug} catalog from web:`, webError.message);
           // Fallback to local file
           try {
-            const filePath = path.join(DATA_DIR, `${programSlug.replace('-', '-')}-catalog.json`);
+            const filePath = path.join(DATA_DIR, `${programSlug}-catalog.json`);
             catalogData = readJson(filePath);
+            catalogData._source = "local";
             console.log(`Loaded ${programSlug} catalog from local file for Claude AI`);
           } catch (fileError) {
             console.log('Catalog not found, proceeding with limited data');
           }
         }
-=======
-    try {
-      if (programKey === 'it-bs-2024-25') {
-        const itData = readJson(path.join(DATA_DIR, "it-bs-catalog.json"));
-        catalogData = itData;
-      } else if (programKey === 'comm-bs-2024-25') {
-        const commData = readJson(path.join(DATA_DIR, "comm-bs-catalog.json"));
-        catalogData = commData;
-      } else if (programKey === 'cj-bs-2024-25') {
-        const cjData = readJson(path.join(DATA_DIR, "cj-bs-catalog.json"));
-        catalogData = cjData;
->>>>>>> new-criminal-justice-page
       }
     }
     
-    const advice = await getAcademicAdvice(question, catalogData, [], degreeProgram);
+    const advice = await getAcademicAdvice(
+      question,
+      catalogData,
+      [],
+      degreeProgram,
+      conversationHistory || []
+    );
     
     res.json({
       success: true,
@@ -396,9 +482,5 @@ setInterval(async () => {
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Catalog backend with Claude AI on http://localhost:${PORT}`);
-<<<<<<< HEAD
   console.log(`Using web scraper for dynamic catalog data when available`);
 });
-=======
-});
->>>>>>> new-criminal-justice-page

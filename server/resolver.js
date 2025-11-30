@@ -64,15 +64,27 @@ async function fetchHTML(url) {
 }
 
 // New: Discover latest catalog via Southeastern landing, then find A–Z and program link
-export async function discoverLatestProgramUrl(programKey, landingUrl = "https://www.southeastern.edu/catalog/") {
-  const cacheKey = `discover:${programKey}`;
+// Now accepts either a programKey (from PROGRAMS config) or a raw program name string
+export async function discoverLatestProgramUrl(programKeyOrName, landingUrl = "https://www.southeastern.edu/catalog/") {
+  const cacheKey = `discover:${programKeyOrName}`;
   const cached = getCache(cacheKey);
   if (cached) return cached;
 
-  const program = PROGRAMS[programKey];
-  if (!program) throw new Error(`Unknown program key: ${programKey}`);
-  const progName = (program.name || "").trim();
-  if (!progName) throw new Error(`Program ${programKey} missing 'name' in config.js`);
+  // Check if this is a known program key or a raw name
+  let progName = '';
+  const program = PROGRAMS[programKeyOrName];
+  
+  if (program) {
+    // It's a known program key
+    progName = (program.name || "").trim();
+    if (!progName) throw new Error(`Program ${programKeyOrName} missing 'name' in config.js`);
+  } else {
+    // It's a raw program name - use it directly
+    progName = String(programKeyOrName || "").trim();
+    if (!progName) throw new Error(`Program name cannot be empty`);
+  }
+
+  console.log(`[discover] Searching for program: "${progName}"`);
 
   // 1) Collect catoid candidates from landing pages
   const landingCandidates = [landingUrl, "https://catalog.southeastern.edu/"];
@@ -98,22 +110,49 @@ export async function discoverLatestProgramUrl(programKey, landingUrl = "https:/
     try {
       const html = await fetchHTML(indexUrl);
       const $ = cheerio.load(html);
-      // Find an anchor whose text matches the exact program name
+      // Find an anchor whose text matches the program name (case-insensitive, flexible matching)
       let progHref = null;
+      const normalizedSearch = progName.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      
       $('a[href*="preview_program.php"]').each((_, a) => {
         const text = String($(a).text() || '').trim();
-        if (text.toLowerCase() === progName.toLowerCase()) {
+        const normalizedText = text.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+        
+        // Try exact match first
+        if (normalizedText === normalizedSearch) {
           progHref = $(a).attr('href');
+          console.log(`[discover] Found exact match: "${text}"`);
           return false;
         }
+        
+        // Try partial match (contains all words)
+        const searchWords = normalizedSearch.split(' ');
+        const textWords = normalizedText.split(' ');
+        const allWordsMatch = searchWords.every(word => textWords.includes(word));
+        
+        if (allWordsMatch && !progHref) {
+          progHref = $(a).attr('href');
+          console.log(`[discover] Found partial match: "${text}"`);
+        }
       });
+      
       if (progHref) {
         const abs = progHref.startsWith('http') ? progHref : `https://catalog.southeastern.edu/${progHref.replace(/^\//,'')}`;
+        console.log(`[discover] Success! URL: ${abs}`);
         return setCache(cacheKey, abs, 12 * 60 * 60 * 1000);
       }
-    } catch {}
+    } catch (err) {
+      console.warn(`[discover] Failed to check catoid ${cid}:`, err.message);
+    }
   }
 
-  // If not found, fall back to the prior resolver method
-  return resolveLatestCatalogUrl(programKey);
+  console.warn(`[discover] Could not find program: "${progName}"`);
+  
+  // If it's a known program key, try the fallback resolver
+  if (program) {
+    return resolveLatestCatalogUrl(programKeyOrName);
+  }
+  
+  // Otherwise, throw error
+  throw new Error(`Could not discover program: ${progName}`);
 }

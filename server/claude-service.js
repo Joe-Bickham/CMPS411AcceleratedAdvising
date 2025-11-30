@@ -44,7 +44,8 @@ function resolveModel(raw) {
 
   // Friendly aliases -> exact dated ids (update these if Anthropic rotates)
   const map = {
-    sonnet: "claude-3-5-sonnet-20241022",
+    sonnet: "claude-sonnet-4-5-20250929",
+    "claude-sonnet-4-5": "claude-sonnet-4-5-20250929",
     "claude-3-5-sonnet": "claude-3-5-sonnet-20241022",
     "claude-3-5-sonnet-latest": "claude-3-5-sonnet-20241022",
     haiku: "claude-3-5-haiku-20241022",
@@ -52,16 +53,17 @@ function resolveModel(raw) {
     "claude-3-5-haiku-latest": "claude-3-5-haiku-20241022",
   };
 
-  return map[normalized] || normalized || "claude-3-5-haiku-20241022";
+  return map[normalized] || normalized || "claude-sonnet-4-5-20250929";
 }
 
 // Try these in order; the first that works is used for the request
+// Updated to prioritize Sonnet 4.5 as requested
 const FALLBACK_MODELS = [
   () => process.env.ANTHROPIC_MODEL,        // your configured preference
-  () => "claude-3-5-haiku-20241022",        // broadly available
+  () => "claude-sonnet-4-5-20250929",       // primary model (Sonnet 4.5)
+  () => "claude-3-5-sonnet-20241022",       // fallback to Sonnet 3.5
+  () => "claude-3-5-haiku-20241022",        // fallback to Haiku
   () => "claude-3-haiku-20240307",          // older stable
-  // Add more if your key has access, e.g. Opus:
-  // () => "claude-3-opus-20240229",
 ];
 
 async function callClaude({ system, messages, max_tokens = 1000, temperature = 0.3 }) {
@@ -106,7 +108,8 @@ export async function getAcademicAdvice(
   question,
   courseData = {},
   completedCourses = new Set(),
-  degreeProgram
+  degreeProgram,
+  conversationHistory = []
 ) {
   const programName = degreeProgram || courseData?.program?.name || "this degree program";
   const hasLimitedData = !Array.isArray(courseData?.courses) || courseData.courses.length < 10;
@@ -133,30 +136,32 @@ export async function getAcademicAdvice(
   const system = `You are Claude, an AI academic advisor specifically for ${programName} at Southeastern Louisiana University.
 
 IMPORTANT INSTRUCTIONS:
-- You can ONLY provide information about ${programName}
-- If asked about other degree programs, politely redirect to the appropriate program advisor
-- If you don't have specific information about something, clearly state: "I don't have detailed information about [topic] in my current knowledge base. This is something that needs to be added to help students better."
+- You have FULL ACCESS to the ${programName} curriculum data loaded in your system
 - Your data comes from the ${catalogYear} catalog and was ${dataSource === "web" ? "dynamically scraped from the university website" : "loaded from a local snapshot"}
+- You have ${formattedCourses.length} courses in your knowledge base for this program
+- Provide specific, detailed answers using the course data available to you
+- If asked about other degree programs, politely redirect to the appropriate program advisor
 
 PROGRAM OVERVIEW:
 - Program: ${programName}
 - Catalog Year: ${catalogYear}
 - Total Hours Required: ${totalHours}
 - Minimum Grade in Major Courses: ${minGradeMajor}
+- Total Courses Available: ${formattedCourses.length}
 
-AVAILABLE COURSE INFORMATION:
-${JSON.stringify(formattedCourses, null, 2)}
+COMPLETE COURSE CATALOG:
+${formattedCourses.map(c => `- ${c.code}: ${c.title} (${c.credits} credits)${c.prereqs && c.prereqs.length > 0 ? ` | Prerequisites: ${c.prereqs.join(', ')}` : ''}`).join('\n')}
 
 ${planData && Object.keys(planData).length > 0 ? `
-RECOMMENDED COURSE PLAN:
-${JSON.stringify(planData, null, 2)}
+RECOMMENDED 4-YEAR PLAN:
+${Object.entries(planData).map(([year, semesters]) => {
+  return `${year.toUpperCase()}:\n${Object.entries(semesters).map(([term, courses]) => {
+    return `  ${term}: ${Array.isArray(courses) ? courses.map(c => c.code || c.title).join(', ') : 'No courses'}`;
+  }).join('\n')}`;
+}).join('\n\n')}
 ` : ""}
 
 STUDENT'S COMPLETED COURSES: ${Array.from(completedCourses || []).join(", ") || "None specified"}
-
-${hasLimitedData ? `
-NOTE: My knowledge base for ${programName} is currently limited. I'll do my best to help with general academic guidance, but for specific course details, prerequisites, and detailed program requirements, I may need to indicate that more information needs to be added to my knowledge base.
-` : ""}
 
 GENERAL ACADEMIC GUIDANCE PRINCIPLES:
 - Typical course load: 12-15 credits per semester
@@ -164,12 +169,31 @@ GENERAL ACADEMIC GUIDANCE PRINCIPLES:
 - Maintain good academic standing
 - Plan for graduation requirements
 
-Provide helpful, honest responses. If you lack specific information, be transparent about it and suggest that the information needs to be added to your knowledge base.`;
+IMPORTANT:
+- You HAVE this curriculum data loaded and available
+- Provide specific course codes, titles, and prerequisites from the data above
+- Reference the 4-year plan when discussing course sequencing
+- Use conversation history to maintain context across questions
+
+Provide helpful, detailed, specific responses using the curriculum data you have access to.`;
 
   try {
+    // Build messages array with conversation history
+    const messages = [];
+    
+    // Add conversation history if available
+    if (conversationHistory && conversationHistory.length > 0) {
+      conversationHistory.forEach(msg => {
+        messages.push(msg);
+      });
+    }
+    
+    // Add current question
+    messages.push({ role: "user", content: question });
+    
     return await callClaude({
       system,
-      messages: [{ role: "user", content: question }],
+      messages,
       max_tokens: 1000,
       temperature: 0.3,
     });
