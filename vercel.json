@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "google-signin-project/**/*", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "^/$", "dest": "/google-signin-project/index.html" },
+    { "src": "^/(.*)$", "dest": "/google-signin-project/$1" }
+  ]
+}
