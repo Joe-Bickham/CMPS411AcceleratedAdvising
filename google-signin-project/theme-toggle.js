@@ -27,8 +27,8 @@
 
   function init(){
     const stored = (function(){ try{ return localStorage.getItem(KEY); }catch{ return null; }})();
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initial = stored || (prefersDark? 'dark':'light');
+    // Default to dark mode for first-time visitors when no stored preference exists.
+    const initial = stored || 'dark';
     setTheme(initial);
 
     // Toggle handler
