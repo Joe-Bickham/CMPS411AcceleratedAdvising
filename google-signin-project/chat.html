@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AI Academic Advisor - Accelerated Advising</title>
+  <link rel="stylesheet" href="theme.css">
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
     import { requireSession } from './auth.js';
@@ -123,6 +124,7 @@
     <div class="user-controls">
       <div class="user-meta" id="user-info">Not signed in</div>
       <button class="signout" id="signout">Sign Out</button>
+      <button id="theme-toggle" class="theme-toggle" aria-pressed="true" aria-label="Switch to light mode">🌙</button>
     </div>
   </div>
 
@@ -604,5 +606,6 @@
       });
     })();
   </script>
+  <script src="theme-toggle.js" defer></script>
 </body>
 </html>

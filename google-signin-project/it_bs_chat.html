@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Advising - Information Technology, BS</title>
+  <link rel="stylesheet" href="theme.css">
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
     import { requireSession } from './auth.js';
@@ -174,6 +175,7 @@
     <div class="user-controls">
       <div class="user-meta" id="user-info">Not signed in</div>
       <button class="signout" id="signout">Sign Out</button>
+      <button id="theme-toggle" class="theme-toggle" aria-pressed="true" aria-label="Switch to light mode">🌙</button>
     </div>
   </div>
 
@@ -217,6 +219,8 @@
                   <label>ACT Scores</label>
                   <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px;">
                     <div>
+
+                    <script src="theme-toggle.js" defer></script>
                       <label for="act-english" style="font-size:12px; margin-bottom:2px;">English</label>
                       <input type="number" id="act-english" class="form-input" placeholder="English" min="1" max="36" style="margin-bottom:4px;">
                     </div>

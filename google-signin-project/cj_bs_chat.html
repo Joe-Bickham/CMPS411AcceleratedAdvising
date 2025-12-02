@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Advising — Criminal Justice, BA</title>
+  <link rel="stylesheet" href="theme.css">
   <style>
     :root{
       --green:#006747; --emerald:#0c8a63; --gold:#fdb913;
@@ -72,6 +73,7 @@
     <div class="user-controls">
       <div class="user-meta" id="user-info">Not signed in</div>
       <button class="signout" id="signout">Sign Out</button>
+      <button id="theme-toggle" class="theme-toggle" aria-pressed="true" aria-label="Switch to light mode">🌙</button>
     </div>
   </div>
 
@@ -525,5 +527,6 @@
       })();
     })();
   </script>
+  <script src="theme-toggle.js" defer></script>
 </body>
 </html>
