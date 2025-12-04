@@ -1,0 +1,225 @@
+
+
+:root{
+  --bg-gradient-dark: radial-gradient(1200px 800px at 20% -10%, #0e7a62 0%, transparent 60%),
+                      radial-gradient(1200px 800px at 80% 10%, #0b493b 0%, transparent 60%),
+                      linear-gradient(180deg, #0e3a32 0%, #0b2a34 55%, #0a1f2d 100%);
+
+  --text-dark:#eaf8f5;
+  --panel-dark:rgba(255,255,255,.06);
+  --muted-dark:rgba(255,255,255,.85);
+
+  --bg-light: #f5f7fb;
+  --text-light:#0b2a34;
+  --panel-light:#ffffff;
+  --muted-light:rgba(11,42,52,.7);
+}
+
+
+
+html.dark body{
+  background: var(--bg-gradient-dark);
+  color: var(--text-dark);
+}
+
+html.dark .panel,
+html.dark .card{
+  background: var(--panel-dark);
+}
+
+html.dark .muted{
+  color: var(--muted-dark);
+}
+
+html.dark .theme-toggle{
+  background: rgba(255,255,255,.04);
+  color: var(--text-dark);
+  border-color: rgba(255,255,255,.06);
+}
+
+
+
+html.light{
+  --ink: var(--text-light);
+  --muted: var(--muted-light);
+
+  /* Stronger/light-mode panel styling */
+  --panel: #ffffff;
+  --panel-b: rgba(11,42,52,.14); 
+
+  --card: #f7fafc;
+  --card2:#eef3f4;
+
+  
+  --input-bg:#ffffff;
+  --input-border:rgba(11,42,52,.22);
+  --input-border-focus:#0b2a34;
+}
+
+html.light body{
+  background: var(--bg-light);
+  color: var(--text-light);
+}
+
+/* Main panels: Degree Prerequisites, Student Information, Program Notes */
+html.light .panel,
+html.light .card{
+  background: var(--panel);
+  border:1px solid var(--panel-b);
+  border-radius:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,.05); /* large panels pop more */
+  padding:1rem;
+}
+
+
+html.light .panel .card,
+html.light .note-box{
+  background:#f8fbfd;
+  border:1px dashed rgba(11,42,52,.25);
+  border-radius:8px;
+  padding:1rem;
+}
+
+
+html.light .muted{
+  color: var(--muted-light);
+}
+
+html.light .brand,
+html.light .user-meta,
+html.light .sub,
+html.light h1,
+html.light h2,
+html.light h3,
+html.light p,
+html.light label,
+html.light .small{
+  color: var(--ink) !important;
+}
+
+/* Inputs clearly visible in light mode */
+html.light input,
+html.light select,
+html.light textarea{
+  background: var(--input-bg);
+  border:1px solid var(--input-border);
+  color: var(--text-light);
+  border-radius:6px;
+}
+
+html.light input:focus,
+html.light select:focus,
+html.light textarea:focus{
+  border-color: var(--input-border-focus);
+  box-shadow:0 0 0 2px rgba(11,42,52,.15);
+}
+
+/* Buttons readable in light mode */
+html.light .btn,
+html.light .btn-secondary,
+html.light .btn-download{
+  border:1px solid rgba(11,42,52,.18);
+  background:#ffffff;
+  color:var(--text-light);
+}
+
+html.light .btn:hover,
+html.light .btn-secondary:hover,
+html.light .btn-download:hover{
+  background:#f0f3f5;
+}
+
+/* Theme toggle button */
+.theme-toggle{
+  display:inline-grid;
+  place-items:center;
+  width:42px;
+  height:36px;
+  border-radius:8px;
+  border:1px solid rgba(0,0,0,.06);
+  background:transparent;
+  cursor:pointer;
+  font-size:16px;
+}
+
+.theme-toggle[aria-pressed="true"]{
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
+}
+
+/* Light mode toggle button styling */
+html.light .theme-toggle{
+  background:rgba(11,42,52,.04);
+  color:var(--text-light);
+  border-color:rgba(11,42,52,.12);
+}
+
+/* Mobile adjustments */
+@media(max-width:520px){
+  .theme-toggle{
+    width:36px;
+    height:32px;
+    font-size:14px;
+  }
+}
+
+/* Extra high-contrast fallbacks for elements that had dark backgrounds in the original pages */
+html.light .logo-wrap{ background: linear-gradient(180deg, #f0f6f3, #e6eff0); }
+html.light .prog-pill, html.light .pill{ background:#f1f6f4; color:var(--text-light); border:1px solid rgba(11,42,52,.08); }
+html.light .msg{ background:#ffffff; color:var(--text-light); border:1px solid rgba(11,42,52,.08); }
+html.light .me{ background:#0c8a63; color:#ffffff; }
+html.light .chips .chip{ background:#f3f7f5; color:var(--text-light); border:1px solid rgba(11,42,52,.06); }
+html.light .notes{ background: #fbffff; border:1px dashed rgba(11,42,52,.12); color:var(--text-light); }
+
+/* Placeholders and subtle text */
+html.light input::placeholder, html.light textarea::placeholder{ color: rgba(11,42,52,.45); }
+
+/* Ensure links remain legible */
+html.light a{ color: #0b2a34; text-decoration: underline; }
+
+/* Strong, specific rules for Student Information area and labels */
+html.light .student-info-section{
+  background: #ffffff; /* clear white card */
+  border:1px solid rgba(11,42,52,.12);
+  color: var(--text-light);
+  padding: 14px;
+  border-radius:8px;
+}
+
+html.light .student-info-section h3{
+  color:#0b2a34;
+  font-weight:800;
+  margin:0 0 12px;
+}
+
+html.light .form-group label,
+html.light label{
+  color: #0b2a34;
+  font-weight:700;
+  display:block;
+  margin-bottom:6px;
+}
+
+html.light .form-input,
+html.light .form-textarea{
+  background: #ffffff;
+  color: #0b2a34;
+  border:1px solid rgba(11,42,52,.18);
+  box-shadow:none;
+}
+
+html.light .form-input::placeholder,
+html.light .form-textarea::placeholder{
+  color: rgba(11,42,52,.45);
+}
+
+
+html.light .composer, html.light .panel .composer{ background: #f7fafb; }
+
+/* Make action buttons more prominent in light mode */
+html.light .btn{ background:#0c8a63; color:#fff; border-color: rgba(0,0,0,.06); }
+html.light .btn-secondary{ background:#ffffff; color:#0b2a34; border:1px solid rgba(11,42,52,.12); }
+html.light .btn-download{ background:#f2b507; color:#072b22; border:none; }
+
+/* Increase contrast for small text and section labels */
+html.light .small, html.light .prog-pill, html.light .pill{ color: #093034; font-weight:700; }
+
