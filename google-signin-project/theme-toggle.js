@@ -1,4 +1,4 @@
-// Theme toggle: persists preference in localStorage and respects system preference
+
 (function(){
   const KEY = 'aa_theme';
   const BTN_ID = 'theme-toggle';
@@ -27,11 +27,11 @@
 
   function init(){
     const stored = (function(){ try{ return localStorage.getItem(KEY); }catch{ return null; }})();
-    // Default to dark mode for first-time visitors when no stored preference exists.
+    
     const initial = stored || 'dark';
     setTheme(initial);
 
-    // Toggle handler
+    
     document.addEventListener('click', (e)=>{
       const t = e.target;
       if(!t) return;
@@ -41,7 +41,7 @@
       }
     });
 
-    // Respond to system changes when user hasn't explicitly chosen
+    
     try{
       const mq = window.matchMedia('(prefers-color-scheme: dark)');
       mq.addEventListener?.('change', (e)=>{

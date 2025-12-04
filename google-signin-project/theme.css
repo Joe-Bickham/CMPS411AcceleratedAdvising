@@ -1,6 +1,4 @@
-/* ------------------------------------------------------ */
-/* Theme variables and toggle styles for Accelerated Advising */
-/* ------------------------------------------------------ */
+
 
 :root{
   --bg-gradient-dark: radial-gradient(1200px 800px at 20% -10%, #0e7a62 0%, transparent 60%),
@@ -17,9 +15,7 @@
   --muted-light:rgba(11,42,52,.7);
 }
 
-/* ------------------------------------------------------ */
-/* DARK MODE */
-/* ------------------------------------------------------ */
+
 
 html.dark body{
   background: var(--bg-gradient-dark);
@@ -41,9 +37,7 @@ html.dark .theme-toggle{
   border-color: rgba(255,255,255,.06);
 }
 
-/* ------------------------------------------------------ */
-/* LIGHT MODE – HIGHER VISIBILITY & READABILITY */
-/* ------------------------------------------------------ */
+
 
 html.light{
   --ink: var(--text-light);
@@ -51,12 +45,12 @@ html.light{
 
   /* Stronger/light-mode panel styling */
   --panel: #ffffff;
-  --panel-b: rgba(11,42,52,.14); /* darker border so panels show clearly */
+  --panel-b: rgba(11,42,52,.14); 
 
   --card: #f7fafc;
   --card2:#eef3f4;
 
-  /* Inputs */
+  
   --input-bg:#ffffff;
   --input-border:rgba(11,42,52,.22);
   --input-border-focus:#0b2a34;
@@ -77,7 +71,7 @@ html.light .card{
   padding:1rem;
 }
 
-/* Program Notes “inner box” if nested inside a panel */
+
 html.light .panel .card,
 html.light .note-box{
   background:#f8fbfd;
@@ -86,7 +80,7 @@ html.light .note-box{
   padding:1rem;
 }
 
-/* Text clarity */
+
 html.light .muted{
   color: var(--muted-light);
 }
@@ -218,7 +212,7 @@ html.light .form-textarea::placeholder{
   color: rgba(11,42,52,.45);
 }
 
-/* Make the input containers stand out against the surrounding panel */
+
 html.light .composer, html.light .panel .composer{ background: #f7fafb; }
 
 /* Make action buttons more prominent in light mode */
