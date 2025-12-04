@@ -6,7 +6,10 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background:
+        radial-gradient(1200px 800px at 20% -10%, #0e7a62 0%, transparent 60%),
+        radial-gradient(1200px 800px at 80% 10%, #0b493b 0%, transparent 60%),
+        linear-gradient(180deg, #0e3a32 0%, #0b2a34 55%, #0a1f2d 100%);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
